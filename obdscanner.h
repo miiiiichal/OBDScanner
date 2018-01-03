@@ -2,6 +2,10 @@
 #define OBDSCANNER_H
 
 #include <QMainWindow>
+#include <QBluetoothLocalDevice>
+
+
+
 
 namespace Ui {
   class OBDScanner;
@@ -15,8 +19,15 @@ public:
   explicit OBDScanner(QWidget *parent = 0);
   ~OBDScanner();
 
+private slots:
+  void on_btRadioButton_clicked(bool checked);
+
+  void on_btConfigButton_clicked();
+
 private:
   Ui::OBDScanner *ui;
+  QBluetoothLocalDevice localDevice;
+
 };
 
 #endif // OBDSCANNER_H
