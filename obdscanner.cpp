@@ -11,4 +11,6 @@ OBDScanner::OBDScanner(QWidget *parent) :
 OBDScanner::~OBDScanner()
 {
   delete ui;
+
+  //qt git remote commit test
 }
