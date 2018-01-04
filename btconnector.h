@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QBluetoothLocalDevice>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QBluetoothServiceDiscoveryAgent>
 
 #include <ui_btconnector.h>
 
@@ -19,11 +21,21 @@ public:
   ~BtConnector();
 
 private slots:
+  void on_buttonScan_clicked();
+  void startScanning();
+  void stopScanning();
 
+  void addFoundDevice(QBluetoothDeviceInfo);
 
+  void on_buttonRemoteDeviceInfo_clicked();
+
+  void doSth();
 private:
   Ui::BtConnector *ui;
-  QBluetoothLocalDevice *localDevice;
+  QBluetoothAddress localDevAddr;
+  QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
+  QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
+
 };
 
 #endif // BTCONNECTOR_H
