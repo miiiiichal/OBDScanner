@@ -191,22 +191,5 @@
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonClose</sender>
-   <signal>clicked()</signal>
-   <receiver>BtConnector</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>339</x>
-     <y>332</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>198</x>
-     <y>175</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -20,6 +20,9 @@ public:
   explicit BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent = 0);
   ~BtConnector();
 
+public slots:
+  void doSth(QBluetoothServiceInfo &info);
+
 private slots:
   void on_buttonScan_clicked();
   void startScanning();
@@ -29,7 +32,11 @@ private slots:
 
   void on_buttonRemoteDeviceInfo_clicked();
 
-  void doSth();
+
+  void on_buttonConnect_clicked();
+
+  void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
+
 private:
   Ui::BtConnector *ui;
   QBluetoothAddress localDevAddr;
