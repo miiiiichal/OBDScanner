@@ -32,16 +32,22 @@ private slots:
 
   void on_buttonRemoteDeviceInfo_clicked();
 
-
-  void on_buttonConnect_clicked();
-
   void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
+
+  void on_buttonPair_clicked();
+  void on_buttonUnpair_clicked();
+
+  void finishPairing(QBluetoothAddress addr, QBluetoothLocalDevice::Pairing status);
 
 private:
   Ui::BtConnector *ui;
   QBluetoothAddress localDevAddr;
+  QBluetoothLocalDevice *localDevice;
   QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
   QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
+
+
+  QBluetoothDeviceInfo getSelectedRemoteDevice();
 
 };
 
