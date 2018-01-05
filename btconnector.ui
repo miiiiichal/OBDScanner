@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>397</width>
-    <height>428</height>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,7 +49,7 @@
     <string>Find</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonConnect">
+  <widget class="QPushButton" name="buttonPair">
    <property name="geometry">
     <rect>
      <x>280</x>
@@ -59,7 +59,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Connnect</string>
+    <string>Pair</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonDisconnect">
@@ -179,37 +179,30 @@
     </property>
    </widget>
   </widget>
-  <widget class="QProgressBar" name="progressBar">
+  <widget class="QTextEdit" name="textEdit">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>360</y>
-     <width>251</width>
-     <height>23</height>
+     <width>104</width>
+     <height>70</height>
     </rect>
    </property>
-   <property name="value">
-    <number>24</number>
+  </widget>
+  <widget class="QPushButton" name="buttonUnpair">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>270</y>
+     <width>80</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Unpair</string>
    </property>
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonClose</sender>
-   <signal>clicked()</signal>
-   <receiver>BtConnector</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>339</x>
-     <y>332</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>198</x>
-     <y>175</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
