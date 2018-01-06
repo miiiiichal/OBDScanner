@@ -1,12 +1,15 @@
 #include "btconnector.h"
 #include "ui_btconnector.h"
 
+
 BtConnector::BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::BtConnector)
 {
   // class members
   ui->setupUi(this);
+
+
   localDevice = &localDev;
   localDevAddr = localDev.address();
   localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
@@ -20,7 +23,9 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent) :
   // my Signal->Slot actions
   connect(ui->buttonClose, SIGNAL(clicked()),this,SLOT(close()) );
   connect(localDiscoveryAgent , SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)) , this , SLOT(addFoundDevice(QBluetoothDeviceInfo)));
+  connect(localDiscoveryAgent , SIGNAL(finished()) , this , SLOT(stopScanning()));
   connect(serviceDiscoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
+  connect(&localDev, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
   connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
   connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
 }
@@ -85,8 +90,40 @@ void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
   QString remoteDeviceInfo;
 
   remoteDeviceInfo.clear();
+  remoteDeviceInfo+="serviceName : ";
   remoteDeviceInfo+=serviceInfo.serviceName();
-  remoteDeviceInfo+="\n"+serviceInfo.serviceDescription();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="serviceDescription : ";
+  remoteDeviceInfo+=serviceInfo.serviceDescription();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="serverChannel : ";
+  remoteDeviceInfo+=serviceInfo.serverChannel();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="serviceClassUuids : ??";
+  //remoteDeviceInfo+=serviceInfo.serviceClassUuids();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="serviceProvider : ";
+  remoteDeviceInfo+=serviceInfo.serviceProvider();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="serviceUuid: ??";
+  //remoteDeviceInfo+=serviceInfo.serviceUuid();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="attributes: ??";
+  //remoteDeviceInfo+=serviceInfo.attributes();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="device : ??";
+  //remoteDeviceInfo+=serviceInfo.device();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="isComplete : ";
+  remoteDeviceInfo+=serviceInfo.isComplete();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="isRegistered: ";
+  remoteDeviceInfo+=serviceInfo.isRegistered();
+  remoteDeviceInfo+="\n---------------------------\n";
+  remoteDeviceInfo+="isValid : ";
+  remoteDeviceInfo+=serviceInfo.isValid();
+
+
 
   ui->textEdit->setText(remoteDeviceInfo);
 }
@@ -156,3 +193,4 @@ void BtConnector::finishPairing(QBluetoothAddress addr,QBluetoothLocalDevice::Pa
 
 
 }
+
