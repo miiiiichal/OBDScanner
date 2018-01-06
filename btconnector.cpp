@@ -156,7 +156,7 @@ void BtConnector::on_buttonUnpair_clicked()
 QBluetoothDeviceInfo BtConnector::getSelectedRemoteDevice(){
   QBluetoothDeviceInfo selectedRemoteDevice;
   QList<QListWidgetItem *> items = ui->listDevicesNearby->selectedItems();
-  if(!items.isEmpty() && items.size()==1){
+  if(items.size()==1){
       QList<QBluetoothDeviceInfo> list = localDiscoveryAgent->discoveredDevices();
       if(!list.isEmpty()){
         QListWidgetItem *item = items.first();
@@ -181,7 +181,7 @@ void BtConnector::finishPairing(QBluetoothAddress addr,QBluetoothLocalDevice::Pa
         }
       if(!name.isEmpty()){
         QList<QListWidgetItem *> items = ui->listDevicesNearby->selectedItems();
-        if(!items.isEmpty() && items.size()==1){
+        if(items.size()==1){
           QListWidgetItem *item = items.first();
           if(status == QBluetoothLocalDevice::Paired || status == QBluetoothLocalDevice::AuthorizedPaired)
             item->setBackgroundColor(QColor("green"));
