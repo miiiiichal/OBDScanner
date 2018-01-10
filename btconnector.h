@@ -2,9 +2,11 @@
 #define BTCONNECTOR_H
 
 #include <QDialog>
+#include <QtDebug>
 #include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothServiceDiscoveryAgent>
+#include <QBluetoothSocket>
 
 #include <ui_btconnector.h>
 
@@ -20,24 +22,30 @@ public:
   explicit BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent = 0);
   ~BtConnector();
 
-public slots:
-  void doSth(QBluetoothServiceInfo &info);
+signals:
+  void mySignal(QBluetoothSocket *socket);
 
 private slots:
   void on_buttonScan_clicked();
-  void startScanning();
-  void stopScanning();
-
-  void addFoundDevice(QBluetoothDeviceInfo);
-
-  void on_buttonRemoteDeviceInfo_clicked();
-
-  void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
-
   void on_buttonPair_clicked();
   void on_buttonUnpair_clicked();
+  void on_buttonRemoteDeviceInfo_clicked();
+  void on_buttonConnect_clicked();
+  void on_buttonDisconnect_clicked();
 
+
+  void startScanning();
+  void stopScanning();
+  void addFoundDevice(QBluetoothDeviceInfo);
+
+  void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
   void finishPairing(QBluetoothAddress addr, QBluetoothLocalDevice::Pairing status);
+
+  void socketConnected();
+  void socketDisconnected();
+  void socketRead();
+  void socketError(QBluetoothSocket::SocketError);
+
 
 private:
   Ui::BtConnector *ui;
@@ -45,9 +53,11 @@ private:
   QBluetoothLocalDevice *localDevice;
   QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
   QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
+  QBluetoothSocket *mySocket;
 
 
   QBluetoothDeviceInfo getSelectedRemoteDevice();
+  void debugInfo(QString );
 
 };
 

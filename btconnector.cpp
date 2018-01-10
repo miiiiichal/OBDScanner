@@ -15,6 +15,7 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent) :
   localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
   serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);
 
+
   //interface init vals
   ui->lineEdit_address->setText(localDevAddr.toString());
   ui->lineEdit_name->setText(localDev.name());
@@ -28,6 +29,8 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent) :
   connect(&localDev, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
   connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
   connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
+
+
 }
 
 BtConnector::~BtConnector()
@@ -81,20 +84,18 @@ void BtConnector::on_buttonRemoteDeviceInfo_clicked()
   }
 }
 
-void BtConnector::doSth(QBluetoothServiceInfo &info){
-   ui->textEdit->setText(tr("ghjkl"));
-}
-
 void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
  //  ui->textEdit->setText("remoteServiceInfo");
   QString remoteDeviceInfo;
 
   remoteDeviceInfo.clear();
-  remoteDeviceInfo+="serviceName : ";
+  //remoteDeviceInfo+=serviceInfo.QBluetoothUuid(QBluetoothUuid::SerialPort));
+//Info.device().name();
+  remoteDeviceInfo+="\nserviceName : ";
   remoteDeviceInfo+=serviceInfo.serviceName();
   remoteDeviceInfo+="\n---------------------------\n";
   remoteDeviceInfo+="serviceDescription : ";
-  remoteDeviceInfo+=serviceInfo.serviceDescription();
+  remoteDeviceInfo+=serviceInfo.attribute(QBluetoothServiceInfo::ServiceDescription).toString();
   remoteDeviceInfo+="\n---------------------------\n";
   remoteDeviceInfo+="serverChannel : ";
   remoteDeviceInfo+=serviceInfo.serverChannel();
@@ -103,7 +104,7 @@ void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
   //remoteDeviceInfo+=serviceInfo.serviceClassUuids();
   remoteDeviceInfo+="\n---------------------------\n";
   remoteDeviceInfo+="serviceProvider : ";
-  remoteDeviceInfo+=serviceInfo.serviceProvider();
+  remoteDeviceInfo+=serviceInfo.attribute(QBluetoothServiceInfo::ServiceProvider).toString();
   remoteDeviceInfo+="\n---------------------------\n";
   remoteDeviceInfo+="serviceUuid: ??";
   //remoteDeviceInfo+=serviceInfo.serviceUuid();
@@ -169,6 +170,12 @@ QBluetoothDeviceInfo BtConnector::getSelectedRemoteDevice(){
   return selectedRemoteDevice;
 }
 
+void BtConnector::debugInfo(QString s)
+{
+   s="\n--------------\n" +s;
+   ui->textEdit->append(s);
+}
+
 void BtConnector::finishPairing(QBluetoothAddress addr,QBluetoothLocalDevice::Pairing status){
   QList<QBluetoothDeviceInfo> list = localDiscoveryAgent->discoveredDevices();
   QString name ="";
@@ -194,3 +201,58 @@ void BtConnector::finishPairing(QBluetoothAddress addr,QBluetoothLocalDevice::Pa
 
 }
 
+
+void BtConnector::on_buttonConnect_clicked()
+{
+   QBluetoothDeviceInfo selectedRemoteDevice=getSelectedRemoteDevice();
+   mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
+   connect(mySocket, SIGNAL(connected()),this,SLOT(socketConnected()));
+   connect(mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+   connect(mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
+   connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
+   mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
+
+//Serial Port Profile - serviceName dev: ODBII
+}
+
+
+void BtConnector::socketConnected(){
+  if(mySocket->state()==QBluetoothSocket::ConnectedState){
+    debugInfo("socket connected");
+    //emmit() // emit signal about connected socket
+    emit(mySignal(mySocket));
+    QByteArray buffer = "@2";
+    mySocket->write(buffer);
+  }
+  else{
+      debugInfo("socket status : not connected ");
+    }
+}
+
+void BtConnector::socketDisconnected(){
+  debugInfo("socket disconnected");
+  if(mySocket)
+    delete mySocket;
+}
+void BtConnector::socketRead(){
+  debugInfo("reading socket: \n");
+  qint64 readbytes;
+  qint64 max_size = 255;
+  char readLine[max_size+1];
+  readbytes=mySocket->readLine(readLine,max_size);
+  debugInfo(readLine);
+
+
+}
+void BtConnector::socketError(QBluetoothSocket::SocketError){
+  debugInfo("err: " + mySocket->errorString());
+  }
+
+void BtConnector::on_buttonDisconnect_clicked()
+{
+    debugInfo("clicked disconnect");
+    if(mySocket->isOpen() &&  mySocket->state() != QBluetoothSocket::UnconnectedState){
+      mySocket->disconnectFromService();
+
+      }
+}

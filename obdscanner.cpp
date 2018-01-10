@@ -7,6 +7,18 @@ OBDScanner::OBDScanner(QWidget *parent) :
   ui(new Ui::OBDScanner)
 {
   ui->setupUi(this);
+
+  if(localDevice.hostMode()==QBluetoothLocalDevice::HostPoweredOff){
+      ui->btConfigButton->setEnabled(false);
+      ui->btRadioButton->setChecked(false);
+    }
+
+  log= new Logger("OBDScannerLog.txt");
+  log->logInfo("Logger Start");
+  QString ss = "logggggggggggeeeerrrrr info";
+  log->logInfo(ss);
+  log->logDebbug("debbug log sssssssss");
+  log->logError("errorrek");
 }
 
 OBDScanner::~OBDScanner()
@@ -33,4 +45,11 @@ void OBDScanner::on_btConfigButton_clicked()
 {
   BtConnector btConnectorForm(localDevice);
   btConnectorForm.exec();
+
+  connect(&btConnectorForm, SIGNAL(mySignal(QBluetoothSocket *socket)),this,SLOT(getSignalFromConnector(QBluetoothSocket *socket)));
+}
+void OBDScanner::getSignalFromConnector(QBluetoothSocket *mySocket){
+    log->logDebbug("get signal from socket ");
+    if(mySocket->state()==QBluetoothSocket::ConnectedState)
+        log->logDebbug("and got valid socket pointer");
 }
