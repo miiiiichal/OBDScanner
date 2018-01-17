@@ -24,8 +24,8 @@ public:
   ~OBDScanner();
 
 public slots:
-    void getSignalFromConnector(QBluetoothSocket*);
-    void getSignalFromConnector(QBluetoothDeviceInfo*);
+    void getSocketFromConnector(QBluetoothSocket*);
+    void getDeviceInfoFromConnector(QBluetoothDeviceInfo*);
     void getSignalFromConnector(QString );
 
 private slots:
