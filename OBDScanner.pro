@@ -6,6 +6,13 @@
 
 QT       += core gui bluetooth
 
+# With C++11 support
+greaterThan(QT_MAJOR_VERSION, 4){
+CONFIG += c++11
+} else {
+QMAKE_CXXFLAGS += -std=c++0x
+}
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = OBDScanner
@@ -26,11 +33,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         obdscanner.cpp \
-    btconnector.cpp
+    btconnector.cpp \
+    logger.cpp
 
 HEADERS += \
         obdscanner.h \
-    btconnector.h
+    btconnector.h \
+    logger.h
 
 FORMS += \
         obdscanner.ui \
