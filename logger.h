@@ -33,8 +33,8 @@ public:
 
 private:
 QFile *logFile;
-QString filePath = "./OBDScannerLog.txt";
-LogLevel logLevel = LogLevel::Info;
+QString filePath = "./logs/OBDScannerLog.txt";
+LogLevel logLevel = LogLevel::Debbug;
 void writeToLog(QString);
 
 };

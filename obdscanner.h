@@ -25,6 +25,8 @@ public:
 
 public slots:
     void getSignalFromConnector(QBluetoothSocket*);
+    void getSignalFromConnector(QBluetoothDeviceInfo*);
+    void getSignalFromConnector(QString );
 
 private slots:
   void on_btRadioButton_clicked(bool checked);

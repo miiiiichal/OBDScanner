@@ -4,7 +4,7 @@
 
 Logger::Logger()
 {
-  filePath = "./OBDScannerLog.txt";
+  filePath = "./logs/OBDScannerLog.txt";
   logFile = new QFile(filePath);
   logFile->open(QFile::WriteOnly);
 }
@@ -13,7 +13,7 @@ Logger::Logger(QString fileName) : filePath(fileName){
   logFile = new QFile(fileName);
   if(logFile->exists()){
     QDateTime dateTime;
-    QString oldLogName((dateTime.currentDateTime()).toString("yyyyMMddhhmmss"));
+    QString oldLogName((dateTime.currentDateTime()).toString(QString("yyyyMMddhhmmss")));
     oldLogName+="_"+logFile->fileName();
     if(logFile->copy(oldLogName)){
         logFile->flush();
@@ -36,24 +36,28 @@ void Logger::writeToLog(QString textToWrite)
   if(!logFile->isOpen())
     logFile->open(QFile::WriteOnly);
   if(logFile->isWritable()){
+      QDateTime now;
+      QString data((QDateTime::currentDateTime()).toString(QString("yyyy-MM-dd hh:mm:ss")));
       QTextStream out(logFile);
-      out<<textToWrite+"\n";
+      out<<"---------------------\n" ;
+      out<<"["+data+"]"+textToWrite+"\n";
+      out<<"---------------------\n" ;
   }
 }
 void Logger::logError(QString errorMsg)
 {
-   writeToLog("Error: "+errorMsg);
+   writeToLog("[Error]: "+errorMsg);
 }
 
 void Logger::logInfo(QString infoMsg)
 {
-  if(logLevel==Logger::Info)
-    writeToLog("Info: "+infoMsg);
+  if(logLevel==Logger::Info || logLevel==Logger::Debbug)
+    writeToLog("[Info] "+infoMsg);
   }
 void Logger::logDebbug(QString debbugMsg)
 {
-  if(logLevel==Logger::Debbug)
-    writeToLog("Debbug: "+debbugMsg);
+  if(logLevel==Logger::Debbug )
+    writeToLog("[Debbug] "+debbugMsg);
 }
 
 Logger::LogLevel Logger::getLogLevel(){

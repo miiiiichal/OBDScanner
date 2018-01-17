@@ -13,20 +13,16 @@ OBDScanner::OBDScanner(QWidget *parent) :
       ui->btRadioButton->setChecked(false);
     }
 
-  log= new Logger("OBDScannerLog.txt");
-  log->logInfo("Logger Start");
-  QString ss = "logggggggggggeeeerrrrr info";
-  log->logInfo(ss);
-  log->logDebbug("debbug log sssssssss");
-  log->logError("errorrek");
+  log= new Logger("./logs/OBDScannerLog.txt");
+  log->logInfo("Application statrs");
+
 }
 
 OBDScanner::~OBDScanner()
 {
   delete ui;
-
-  //qt git remote commit test testhtml
-  //next test
+  log->logInfo("Application ends");
+  delete log;
 }
 
 void OBDScanner::on_btRadioButton_clicked(bool checked)
@@ -43,13 +39,26 @@ void OBDScanner::on_btRadioButton_clicked(bool checked)
 
 void OBDScanner::on_btConfigButton_clicked()
 {
-  BtConnector btConnectorForm(localDevice);
+  BtConnector btConnectorForm(localDevice, log);
   btConnectorForm.exec();
-
-  connect(&btConnectorForm, SIGNAL(mySignal(QBluetoothSocket *socket)),this,SLOT(getSignalFromConnector(QBluetoothSocket *socket)));
+  connect(&btConnectorForm, SIGNAL(testSignal(QString str)),this,SLOT(getSignalFromConnector(QString str)));
+  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *socket)),this,SLOT(getSignalFromConnector(QBluetoothSocket *socket)));
+  connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *deviceInfo)),this,SLOT(getSignalFromConnector(QBluetoothDeviceInfo *device)));
 }
+
 void OBDScanner::getSignalFromConnector(QBluetoothSocket *mySocket){
-    log->logDebbug("get signal from socket ");
-    if(mySocket->state()==QBluetoothSocket::ConnectedState)
+    log->logDebbug("get signal about connected socket ");
+    if(mySocket->state()==QBluetoothSocket::ConnectedState){
         log->logDebbug("and got valid socket pointer");
+        ui->connectedDeviceName->setText(mySocket->peerName());
+    }
+}
+void OBDScanner::getSignalFromConnector(QBluetoothDeviceInfo *deviceInfo){
+    log->logDebbug("get signal about NOTconnected socket - dev:" +deviceInfo->name());
+    ui->connectedDeviceName->setText("Connot connect to "+deviceInfo->name());
+}
+
+void OBDScanner::getSignalFromConnector(QString str){
+    log->logDebbug("get signal from btConnector :"+str);
+    ui->connectedDeviceName->setText(str);
 }

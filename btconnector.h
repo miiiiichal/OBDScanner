@@ -7,6 +7,7 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothServiceDiscoveryAgent>
 #include <QBluetoothSocket>
+#include "logger.h"
 
 #include <ui_btconnector.h>
 
@@ -19,11 +20,13 @@ class BtConnector : public QDialog
   Q_OBJECT
 
 public:
-  explicit BtConnector(QBluetoothLocalDevice &localDev, QWidget *parent = 0);
+  explicit BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *parent = 0);
   ~BtConnector();
 
 signals:
-  void mySignal(QBluetoothSocket *socket);
+  void conectedToSocket(QBluetoothSocket *socket);
+  void notConectedToSocket(QBluetoothDeviceInfo*);
+  void testSignal(QString);
 
 private slots:
   void on_buttonScan_clicked();
@@ -47,6 +50,8 @@ private slots:
   void socketError(QBluetoothSocket::SocketError);
 
 
+  void on_pushButton_clicked();
+
 private:
   Ui::BtConnector *ui;
   QBluetoothAddress localDevAddr;
@@ -54,10 +59,12 @@ private:
   QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
   QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
   QBluetoothSocket *mySocket;
+  QBluetoothDeviceInfo *selectedDevice;
 
 
   QBluetoothDeviceInfo getSelectedRemoteDevice();
-  void debugInfo(QString );
+  Logger *log;
+  void debugInfo(QString);
 
 };
 
