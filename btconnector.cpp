@@ -277,16 +277,6 @@ void BtConnector::socketRead(){
 
       log->logInfo("Read FROM SOCKET : raw " + line);
       debugInfo("\nOdp :" + line);
-
-      /*
-AT @2 -> 4154204032
-AT DP -> 4154204450
-ATDP -> 41544450
-
-0101 -> 30313031
-
-    */
-
 }
 void BtConnector::socketError(QBluetoothSocket::SocketError){
   //debugInfo("err: " + mySocket->errorString());

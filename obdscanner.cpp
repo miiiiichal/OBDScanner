@@ -40,20 +40,21 @@ void OBDScanner::on_btRadioButton_clicked(bool checked)
 void OBDScanner::on_btConfigButton_clicked()
 {
   BtConnector btConnectorForm(localDevice, log);
-  btConnectorForm.exec();
+
   connect(&btConnectorForm, SIGNAL(testSignal(QString str)),this,SLOT(getSignalFromConnector(QString str)));
-  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *socket)),this,SLOT(getSignalFromConnector(QBluetoothSocket *socket)));
-  connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *deviceInfo)),this,SLOT(getSignalFromConnector(QBluetoothDeviceInfo *device)));
+  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *socket)),this,SLOT(getSocketFromConnector(QBluetoothSocket *socket)));
+  connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *deviceInfo)),this,SLOT(getDeviceInfoFromConnector(QBluetoothDeviceInfo *device)));
+  btConnectorForm.exec();
 }
 
-void OBDScanner::getSignalFromConnector(QBluetoothSocket *mySocket){
+void OBDScanner::getSocketFromConnector(QBluetoothSocket *mySocket){
     log->logDebbug("get signal about connected socket ");
     if(mySocket->state()==QBluetoothSocket::ConnectedState){
         log->logDebbug("and got valid socket pointer");
         ui->connectedDeviceName->setText(mySocket->peerName());
     }
 }
-void OBDScanner::getSignalFromConnector(QBluetoothDeviceInfo *deviceInfo){
+void OBDScanner::getDeviceInfoFromConnector(QBluetoothDeviceInfo *deviceInfo){
     log->logDebbug("get signal about NOTconnected socket - dev:" +deviceInfo->name());
     ui->connectedDeviceName->setText("Connot connect to "+deviceInfo->name());
 }
