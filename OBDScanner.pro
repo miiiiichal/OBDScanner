@@ -34,12 +34,16 @@ SOURCES += \
         main.cpp \
         obdscanner.cpp \
     btconnector.cpp \
-    logger.cpp
+    logger.cpp \
+    obddataexchanger.cpp \
+    obddataparser.cpp
 
 HEADERS += \
         obdscanner.h \
     btconnector.h \
-    logger.h
+    logger.h \
+    obddataexchanger.h \
+    obddataparser.h
 
 FORMS += \
         obdscanner.ui \

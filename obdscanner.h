@@ -6,6 +6,7 @@
 #include <QBluetoothSocket>
 #include "logger.h"
 #include "btconnector.h"
+#include "obddataexchanger.h"
 
 
 
@@ -37,6 +38,8 @@ private:
   Ui::OBDScanner *ui;
   QBluetoothLocalDevice localDevice;
   Logger *log;
+  //BtConnector *btConnectorForm;
+  ObdDataExchanger *dataExchanger;
 
 };
 

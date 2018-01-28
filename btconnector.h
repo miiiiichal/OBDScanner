@@ -28,6 +28,9 @@ signals:
   void notConectedToSocket(QBluetoothDeviceInfo*);
   void testSignal(QString);
 
+public slots:
+  void on_pushButton_2_clicked();
+
 private slots:
   void on_buttonScan_clicked();
   void on_buttonPair_clicked();
@@ -35,6 +38,7 @@ private slots:
   void on_buttonRemoteDeviceInfo_clicked();
   void on_buttonConnect_clicked();
   void on_buttonDisconnect_clicked();
+  void localSignalCatcher(QString);
 
 
   void startScanning();
@@ -51,6 +55,8 @@ private slots:
 
 
   void on_pushButton_clicked();
+
+
 
 private:
   Ui::BtConnector *ui;

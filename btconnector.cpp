@@ -35,7 +35,9 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *
   connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
   connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
 
+  connect(this, SIGNAL(testSignal(QString)), this,SLOT(localSignalCatcher(QString)));
   log->logDebbug("btConnector created");
+
 
 }
 
@@ -243,9 +245,12 @@ void BtConnector::on_buttonConnect_clicked()
    connect(mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
    connect(mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
    connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
-  // connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*)), this, SLOT(close()));
+   //connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*)), this, SLOT(close()));
    //connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(close()));
+   //connect(this, SIGNAL(testSignal(QString)), this, SLOT(close()));
+
    mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
+
 
 //Serial Port Profile - serviceName dev: ODBII
 }
@@ -253,13 +258,11 @@ void BtConnector::on_buttonConnect_clicked()
 
 void BtConnector::socketConnected(){
   if(mySocket->state()==QBluetoothSocket::ConnectedState){
-    log->logDebbug("socket connected");
-    debugInfo("connected");
     //emmit() // emit signal connected socket
     emit(conectedToSocket(mySocket));
     // wyłączone - komunikacja przeniesiona do okna gł.
-
-
+    log->logDebbug("socket connected");
+    debugInfo("connected");
   }
   else{
       log->logDebbug("socket status : not connected ");
@@ -273,10 +276,14 @@ void BtConnector::socketDisconnected(){
 }
 void BtConnector::socketRead(){
      log->logDebbug("reading from socket");
-      QByteArray line = mySocket->readAll();
 
-      log->logInfo("Read FROM SOCKET : raw " + line);
-      debugInfo("\nOdp :" + line);
+     if(mySocket->bytesAvailable()>0){
+        QByteArray line = mySocket->readLine();
+        log->logInfo("Read FROM SOCKET : raw " + line);
+        debugInfo("\nOdp :" + line);
+     }
+     log->logDebbug("reading finish- canReadLine)() false");
+
 }
 void BtConnector::socketError(QBluetoothSocket::SocketError){
   //debugInfo("err: " + mySocket->errorString());
@@ -298,11 +305,24 @@ void BtConnector::on_pushButton_clicked()
     QString instruction(ui->inputInstr->text());
     instruction.append("\r");
     QByteArray buffer(instruction.toStdString().c_str());
-    mySocket->write(buffer);
+    if(mySocket->isWritable())
+        mySocket->write(buffer);
     log->logInfo("write instr: "+instruction);
     debugInfo("send :" + instruction);
    // while (mySocket->canReadLine()) {
-    QByteArray line = this->mySocket->readAll();
-    log->logDebbug("ReadFROMSOCKET after write: "+QString::fromUtf8(line.constData(), line.length()));
+   // QByteArray line = this->mySocket->readAll();
+   // log->logDebbug("ReadFROMSOCKET after write: "+QString::fromUtf8(line.constData(), line.length()));
    // }
+}
+
+void BtConnector::on_pushButton_2_clicked()
+{
+    log->logDebbug("emitting testSignal ");
+    emit testSignal(QString("ssssssssss"));
+    log->logDebbug("emitting connectedToSocket ");
+    emit(conectedToSocket(new QBluetoothSocket()));
+}
+
+void BtConnector::localSignalCatcher(QString s){
+    log->logDebbug("catching test signal in btconnector : "+ s);
 }

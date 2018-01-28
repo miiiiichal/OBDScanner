@@ -16,6 +16,12 @@ OBDScanner::OBDScanner(QWidget *parent) :
   log= new Logger("./logs/OBDScannerLog.txt");
   log->logInfo("Application statrs");
 
+  /*btConnectorForm = new BtConnector(localDevice, log);
+
+  connect(btConnectorForm, SIGNAL(testSignal(QString)),this,SLOT(getSignalFromConnector(QString)));
+  connect(btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket*)),this,SLOT(getSocketFromConnector(QBluetoothSocket*)));
+  connect(btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *)),this,SLOT(getDeviceInfoFromConnector(QBluetoothDeviceInfo*)));
+*/
 }
 
 OBDScanner::~OBDScanner()
@@ -41,9 +47,11 @@ void OBDScanner::on_btConfigButton_clicked()
 {
   BtConnector btConnectorForm(localDevice, log);
 
-  connect(&btConnectorForm, SIGNAL(testSignal(QString str)),this,SLOT(getSignalFromConnector(QString str)));
-  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *socket)),this,SLOT(getSocketFromConnector(QBluetoothSocket *socket)));
-  connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *deviceInfo)),this,SLOT(getDeviceInfoFromConnector(QBluetoothDeviceInfo *device)));
+  connect(&btConnectorForm, SIGNAL(testSignal(QString)),this,SLOT(getSignalFromConnector(QString)));
+  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *)),this,SLOT(getSocketFromConnector(QBluetoothSocket *)));
+  connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *)),this,SLOT(getDeviceInfoFromConnector(QBluetoothDeviceInfo *)));
+
+//   btConnectorForm->setModal(true);
   btConnectorForm.exec();
 }
 
@@ -52,6 +60,11 @@ void OBDScanner::getSocketFromConnector(QBluetoothSocket *mySocket){
     if(mySocket->state()==QBluetoothSocket::ConnectedState){
         log->logDebbug("and got valid socket pointer");
         ui->connectedDeviceName->setText(mySocket->peerName());
+
+        dataExchanger=new ObdDataExchanger(mySocket,log);
+        connect(mySocket, SIGNAL(readyRead()), dataExchanger, SLOT(getDataFromElm327()));
+        connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), dataExchanger, SLOT(readingError(QBluetoothSocket::SocketError)));
+
     }
 }
 void OBDScanner::getDeviceInfoFromConnector(QBluetoothDeviceInfo *deviceInfo){
