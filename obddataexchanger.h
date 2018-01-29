@@ -11,11 +11,12 @@ class ObdDataExchanger : public QObject
 private:
     QBluetoothSocket *mySocket;
     Logger *log;
-    QVector<QByteArray> data;
+
+    QVector<QString> responseRegister;
+    QByteArray lastResponse;
 public:
     explicit ObdDataExchanger(QObject *parent = nullptr);
     ObdDataExchanger(QBluetoothSocket * ,Logger *);
-
 
     void setSocket(QBluetoothSocket *);
     void setLogger(Logger *);
@@ -23,8 +24,11 @@ public:
 
    // void sendDataToElm327(QByteArray);
     void sendDataToElm327(QString &);
-    QVector<QByteArray> getData();
+    QString getLastResponse();
+
 signals:
+    void readDataReady();
+    void readDataReady(QString);
 
 public slots:
     void getDataFromElm327();

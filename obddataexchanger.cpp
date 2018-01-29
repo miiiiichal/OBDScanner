@@ -8,7 +8,8 @@ ObdDataExchanger::ObdDataExchanger(QObject *parent) : QObject(parent)
 ObdDataExchanger::ObdDataExchanger(QBluetoothSocket *socket, Logger *logger) : mySocket(socket), log(logger)
 {
     log->logDebbug("DataExchanger Created");
-
+    connect(mySocket, SIGNAL(readyRead()), this, SLOT(getDataFromElm327()));
+    connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(readingError(QBluetoothSocket::SocketError)));
 }
 
 void ObdDataExchanger::setSocket(QBluetoothSocket *socket)
@@ -33,30 +34,43 @@ QBluetoothSocket* ObdDataExchanger::getSocket(){
 
 void ObdDataExchanger::sendDataToElm327(QString &instruction )
 {
-    data.clear();
+
     if(!instruction.isEmpty()){
         instruction.append("\r");
         QByteArray buffer(instruction.toStdString().c_str());
         if(mySocket->isWritable()){
             mySocket->write(buffer);
             log->logInfo("write instr: "+instruction);
+            //a w tym miejscu założony semafor
         }
     }
 }
 
-QVector<QByteArray> ObdDataExchanger::getData()
+QString ObdDataExchanger::getLastResponse()
 {
-    return data;
+
+    if(responseRegister.isEmpty())
+        return QString("");
+    else
+        return QString(responseRegister.takeFirst());
+
+
 }
 
-void ObdDataExchanger::getDataFromElm327(){
-    QString readData;
 
+void ObdDataExchanger::getDataFromElm327(){
     if(mySocket->isReadable()){
         if(mySocket->bytesAvailable()>0){
            QByteArray line = mySocket->readLine().trimmed();
-           log->logInfo("Read FROM SOCKET : raw " + line);
-           data.push_back(line);
+           log->logDebbug("Reading FROM SOCKET : " + line);
+           lastResponse.append(line);
+           if(line.contains('\r')){
+                responseRegister.push_back(QString(lastResponse));
+                log->logInfo("Read FROM SOCKET : whole response : " + lastResponse);
+                //w tym miejscu powinien być zwolniony semafor?? lockGuard??
+                emit readDataReady(getLastResponse());
+                lastResponse.clear();
+           }
         }
     }
     else{
@@ -67,8 +81,8 @@ void ObdDataExchanger::getDataFromElm327(){
 
 void ObdDataExchanger::readingError(QBluetoothSocket::SocketError)
 {
-    //debugInfo("err: " + mySocket->errorString());
-    log->logDebbug("err: " + mySocket->errorString());
+    log->logError("err: " + mySocket->errorString());
+
 }
 
 
