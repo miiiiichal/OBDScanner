@@ -32,13 +32,14 @@ QBluetoothSocket* ObdDataExchanger::getSocket(){
 
 
 
-void ObdDataExchanger::sendDataToElm327(QString &instruction )
+void ObdDataExchanger::sendDataToElm327(QString &instr )
 {
-
+    QString instruction(instr);
     if(!instruction.isEmpty()){
         instruction.append("\r");
         QByteArray buffer(instruction.toStdString().c_str());
-        if(mySocket->isWritable()){
+        if(mySocket!=nullptr){
+         //czemu soket utworzony w btconnector działa i wysyła a przekazany do obdscannera już nei działa??????
             mySocket->write(buffer);
             log->logInfo("write instr: "+instruction);
             //a w tym miejscu założony semafor
@@ -61,10 +62,10 @@ QString ObdDataExchanger::getLastResponse()
 void ObdDataExchanger::getDataFromElm327(){
     if(mySocket->isReadable()){
         if(mySocket->bytesAvailable()>0){
-           QByteArray line = mySocket->readLine().trimmed();
+           QByteArray line = mySocket->readLine();
            log->logDebbug("Reading FROM SOCKET : " + line);
            lastResponse.append(line);
-           if(line.contains('\r')){
+           if(line.contains("\r\r")){
                 responseRegister.push_back(QString(lastResponse));
                 log->logInfo("Read FROM SOCKET : whole response : " + lastResponse);
                 //w tym miejscu powinien być zwolniony semafor?? lockGuard??

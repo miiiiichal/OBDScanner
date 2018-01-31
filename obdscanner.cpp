@@ -49,18 +49,19 @@ void OBDScanner::on_btConfigButton_clicked()
   BtConnector btConnectorForm(localDevice, log);
 
   connect(&btConnectorForm, SIGNAL(testSignal(QString)),this,SLOT(getSignalFromConnector(QString)));
-  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *)),this,SLOT(getSocketFromConnector(QBluetoothSocket *)));
+  //connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *)),this,SLOT(getSocketFromConnector(QBluetoothSocket *)));
+  connect(&btConnectorForm, SIGNAL(conectedToSocket(QBluetoothSocket *, QString)),this,SLOT(getSocketFromConnector(QBluetoothSocket *, QString)));
   connect(&btConnectorForm, SIGNAL(notConectedToSocket(QBluetoothDeviceInfo *)),this,SLOT(getDeviceInfoFromConnector(QBluetoothDeviceInfo *)));
 
 //   btConnectorForm->setModal(true);
   btConnectorForm.exec();
 }
 
-void OBDScanner::getSocketFromConnector(QBluetoothSocket *mySocket){
+void OBDScanner::getSocketFromConnector(QBluetoothSocket *mySocket, QString selectedDevName){
     log->logDebbug("get signal about connected socket ");
     if(mySocket->state()==QBluetoothSocket::ConnectedState){
-        log->logDebbug("and got valid socket pointer");
-        ui->connectedDeviceName->setText(mySocket->peerName());
+        log->logDebbug("and got valid socket pointer, socket state : Connected");
+        ui->connectedDeviceName->setText(selectedDevName);
         dataExchanger=new ObdDataExchanger(mySocket,log);
 
         connect(dataExchanger,SIGNAL(readDataReady(QString)),this,SLOT(obdResponseDispatcher(QString)));

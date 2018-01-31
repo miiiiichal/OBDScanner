@@ -34,11 +34,7 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *
   connect(&localDev, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
   connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
   connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
-
-  connect(this, SIGNAL(testSignal(QString)), this,SLOT(localSignalCatcher(QString)));
   log->logDebbug("btConnector created");
-
-
 }
 
 BtConnector::~BtConnector()
@@ -193,7 +189,6 @@ QBluetoothDeviceInfo BtConnector::getSelectedRemoteDevice(){
         }
     }
   log->logDebbug("selected device : "+selectedRemoteDevice.name());
-  emit(testSignal(selectedRemoteDevice.name()));
   return selectedRemoteDevice;
 }
 
@@ -243,11 +238,11 @@ void BtConnector::on_buttonConnect_clicked()
    mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
    connect(mySocket, SIGNAL(connected()),this,SLOT(socketConnected()));
    connect(mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
-   connect(mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
+   //connect(mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
    connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
-   //connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*)), this, SLOT(close()));
+   //connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*, QString)), this, SLOT(hide()));
    //connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(close()));
-   //connect(this, SIGNAL(testSignal(QString)), this, SLOT(close()));
+
 
    mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
 
@@ -258,9 +253,10 @@ void BtConnector::on_buttonConnect_clicked()
 
 void BtConnector::socketConnected(){
   if(mySocket->state()==QBluetoothSocket::ConnectedState){
-    //emmit() // emit signal connected socket
-    emit(conectedToSocket(mySocket));
-    // wyłączone - komunikacja przeniesiona do okna gł.
+    emit(conectedToSocket(mySocket,selectedDevice->name()));
+    // wyłączone - zmiana obsługi pisania do elm327 na klase exchanget
+    dataEx = new ObdDataExchanger(mySocket,log);
+    connect(mySocket, SIGNAL(readyRead()), dataEx, SLOT(getDataFromElm327()));
     log->logDebbug("socket connected");
     debugInfo("connected");
   }
@@ -303,9 +299,11 @@ void BtConnector::on_buttonDisconnect_clicked()
 void BtConnector::on_pushButton_clicked()
 {
     QString instruction(ui->inputInstr->text());
+    dataEx->sendDataToElm327(instruction);
+    return;
     instruction.append("\r");
     QByteArray buffer(instruction.toStdString().c_str());
-    if(mySocket->isWritable())
+    if(mySocket!=nullptr)
         mySocket->write(buffer);
     log->logInfo("write instr: "+instruction);
     debugInfo("send :" + instruction);

@@ -32,7 +32,7 @@ public:
   ~OBDScanner();
 
 public slots:
-    void getSocketFromConnector(QBluetoothSocket*);
+    void getSocketFromConnector(QBluetoothSocket*,QString);
     void getDeviceInfoFromConnector(QBluetoothDeviceInfo*);
     void getSignalFromConnector(QString );
 
@@ -50,7 +50,6 @@ private:
   Ui::OBDScanner *ui;
   QBluetoothLocalDevice localDevice;
   Logger *log;
-  //BtConnector *btConnectorForm;
   ObdDataExchanger *dataExchanger;
 
 
