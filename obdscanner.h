@@ -2,19 +2,16 @@
 #define OBDSCANNER_H
 
 #include <QMainWindow>
-#include <QBluetoothLocalDevice>
-#include <QBluetoothSocket>
-#include "logger.h"
 #include "btconnector.h"
-#include "obddataexchanger.h"
-
-
+#include "datakeeper.h"
+#include <memory>
 
 
 
 namespace Ui {
   class OBDScanner;
 }
+
 
 class OBDScanner : public QMainWindow
 {
@@ -27,6 +24,15 @@ public:
         Dtc,
         Cmd
     };
+
+//TEST
+    struct myData2{
+        std::shared_ptr<QBluetoothSocket> socketPtr;
+        QBluetoothLocalDevice localDevice;
+        ObdDataExchanger *dataExchanger;
+        Logger *log;
+        QBluetoothSocket *mySocket;
+    }  ;
 
   explicit OBDScanner(QWidget *parent = 0);
   ~OBDScanner();
@@ -45,12 +51,18 @@ private slots:
 
   void obdResponseDispatcher(QString);
   void obdResponseDispatcher();
+  void getRTD();
 
 private:
   Ui::OBDScanner *ui;
   QBluetoothLocalDevice localDevice;
   Logger *log;
   ObdDataExchanger *dataExchanger;
+
+ // DataKeeper myData;
+
+  std::shared_ptr<DataKeeper> mySharedData;
+
 
 
   //--

@@ -4,3 +4,9 @@ ObdDataParser::ObdDataParser()
 {
 
 }
+
+QString ObdDataParser::prepareToDecode(QString &)
+{
+
+
+}

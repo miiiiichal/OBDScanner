@@ -14,5 +14,8 @@ public:
     int decodeEngineRPM(const QString &);
     int decodeCoolantTemp(const QString &);
     int decodeVehicleIdNumber(const std::vector<QString> &);
+
+    QString prepareToDecode(QString &);
+
 };
 #endif

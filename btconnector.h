@@ -3,14 +3,13 @@
 
 #include <QDialog>
 #include <QtDebug>
-#include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothServiceDiscoveryAgent>
-#include <QBluetoothSocket>
-#include "logger.h"
+#include "datakeeper.h"
 #include "obddataexchanger.h"
-
 #include <ui_btconnector.h>
+#include <memory>
+
 
 namespace Ui {
   class BtConnector;
@@ -19,10 +18,31 @@ namespace Ui {
 class BtConnector : public QDialog
 {
   Q_OBJECT
+private:
+  Ui::BtConnector *ui;
+  QBluetoothAddress localDevAddr;
+  //QBluetoothLocalDevice *localDevice;
+  QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
+  QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
+  //QBluetoothSocket *mySocket;
+  QBluetoothDeviceInfo *selectedDevice;
+
+
+
+  QBluetoothDeviceInfo getSelectedRemoteDevice();
+  Logger *log;
+  void debugInfo(QString);
+  ObdDataExchanger *dataEx;
+
+  std::shared_ptr<DataKeeper> spSharedData;
+
 
 public:
-  explicit BtConnector(QBluetoothLocalDevice &, Logger *, QWidget *parent = 0);
+ // explicit BtConnector(QBluetoothLocalDevice &, Logger *, QWidget *parent = 0);
+ // explicit BtConnector(DataKeeper &a,  QWidget *parent = 0);
+  explicit BtConnector(std::shared_ptr<DataKeeper> &a2,  QWidget *parent = 0);
   ~BtConnector();
+
 
 signals:
   void conectedToSocket(QBluetoothSocket*);
@@ -60,20 +80,8 @@ private slots:
 
 
 
-private:
-  Ui::BtConnector *ui;
-  QBluetoothAddress localDevAddr;
-  QBluetoothLocalDevice *localDevice;
-  QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
-  QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
-  QBluetoothSocket *mySocket;
-  QBluetoothDeviceInfo *selectedDevice;
 
 
-  QBluetoothDeviceInfo getSelectedRemoteDevice();
-  Logger *log;
-  void debugInfo(QString);
-  ObdDataExchanger *dataEx;
 
 };
 

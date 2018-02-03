@@ -3,7 +3,10 @@
 
 #include <QBluetoothSocket>
 #include "logger.h"
+
+#include <memory>
 #include <QObject>
+
 
 class ObdDataExchanger : public QObject
 {
@@ -17,6 +20,7 @@ private:
 public:
     explicit ObdDataExchanger(QObject *parent = nullptr);
     ObdDataExchanger(QBluetoothSocket * ,Logger *);
+  //  ObdDataExchanger(std::shared_ptr<DataKeeper> &);
 
     void setSocket(QBluetoothSocket *);
     void setLogger(Logger *);

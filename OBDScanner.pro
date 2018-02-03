@@ -10,7 +10,7 @@ QT       += core gui bluetooth
 greaterThan(QT_MAJOR_VERSION, 4){
 CONFIG += c++11
 } else {
-QMAKE_CXXFLAGS += -std=c++0x
+QMAKE_CXXFLAGS += -std=c++14
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -36,14 +36,16 @@ SOURCES += \
     btconnector.cpp \
     logger.cpp \
     obddataexchanger.cpp \
-    obddataparser.cpp
+    obddataparser.cpp \
+    datakeeper.cpp
 
 HEADERS += \
         obdscanner.h \
     btconnector.h \
     logger.h \
     obddataexchanger.h \
-    obddataparser.h
+    obddataparser.h \
+    datakeeper.h
 
 FORMS += \
         obdscanner.ui \

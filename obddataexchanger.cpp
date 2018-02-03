@@ -12,6 +12,12 @@ ObdDataExchanger::ObdDataExchanger(QBluetoothSocket *socket, Logger *logger) : m
     connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(readingError(QBluetoothSocket::SocketError)));
 }
 
+//ObdDataExchanger::ObdDataExchanger(std::shared_ptr<DataKeeper> &sharedData)
+//{
+//    log=sharedData->log;
+//    mySocket=sharedData->mySocket;
+//}
+
 void ObdDataExchanger::setSocket(QBluetoothSocket *socket)
 {
     if(socket->isOpen())
@@ -31,7 +37,6 @@ QBluetoothSocket* ObdDataExchanger::getSocket(){
 }
 
 
-
 void ObdDataExchanger::sendDataToElm327(QString &instr )
 {
     QString instruction(instr);
@@ -49,15 +54,11 @@ void ObdDataExchanger::sendDataToElm327(QString &instr )
 
 QString ObdDataExchanger::getLastResponse()
 {
-
     if(responseRegister.isEmpty())
         return QString("");
     else
         return QString(responseRegister.takeFirst());
-
-
 }
-
 
 void ObdDataExchanger::getDataFromElm327(){
     if(mySocket->isReadable()){
