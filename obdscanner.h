@@ -4,7 +4,9 @@
 #include <QMainWindow>
 #include "btconnector.h"
 #include "datakeeper.h"
+#include "obddataparser.h"
 #include <memory>
+#include <string>
 
 
 
@@ -52,6 +54,8 @@ private slots:
   void obdResponseDispatcher(QString);
   void obdResponseDispatcher();
   void getRTD();
+
+  void on_pushButton_clicked();
 
 private:
   Ui::OBDScanner *ui;

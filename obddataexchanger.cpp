@@ -36,15 +36,18 @@ QBluetoothSocket* ObdDataExchanger::getSocket(){
     return(mySocket);
 }
 
+void ObdDataExchanger::sendDataToElm327(const char* str){
+    QString instr(str);
+    sendDataToElm327(instr);
+}
 
-void ObdDataExchanger::sendDataToElm327(QString &instr )
+void ObdDataExchanger::sendDataToElm327(const QString &instr)
 {
     QString instruction(instr);
     if(!instruction.isEmpty()){
         instruction.append("\r");
         QByteArray buffer(instruction.toStdString().c_str());
         if(mySocket!=nullptr){
-         //czemu soket utworzony w btconnector działa i wysyła a przekazany do obdscannera już nei działa??????
             mySocket->write(buffer);
             log->logInfo("write instr: "+instruction);
             //a w tym miejscu założony semafor

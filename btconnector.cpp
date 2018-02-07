@@ -292,12 +292,12 @@ void BtConnector::on_buttonConnect_clicked()
    spSharedData->test="onClick change by sharedptr";
 
    QBluetoothDeviceInfo selectedRemoteDevice=*selectedDevice;
-   spSharedData->mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
+   spSharedData->mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
    connect(spSharedData->mySocket, SIGNAL(connected()),this,SLOT(socketConnected()));
    connect(spSharedData->mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
    //connect(spSharedData->mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
    connect(spSharedData->mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
-   //connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*, QString)), this, SLOT(hide()));
+   connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*, QString)), this, SLOT(close()));
    //connect(spSharedData->mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(close()));
 
    spSharedData->mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
@@ -357,8 +357,8 @@ void BtConnector::on_buttonDisconnect_clicked()
 void BtConnector::on_pushButton_clicked()
 {
     QString instruction(ui->inputInstr->text());
-    dataEx->sendDataToElm327(instruction);
-    return;
+//    dataEx->sendDataToElm327(instruction);
+//    return;
     instruction.append("\r");
     QByteArray buffer(instruction.toStdString().c_str());
     if(spSharedData->mySocket!=nullptr)

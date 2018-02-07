@@ -85,7 +85,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="tabsClosable">
      <bool>false</bool>
@@ -112,7 +112,7 @@
      <attribute name="title">
       <string>RTD</string>
      </attribute>
-     <widget class="QDial" name="seed_dial">
+     <widget class="QDial" name="speed_dial">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -261,6 +261,19 @@
         <width>64</width>
         <height>23</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>160</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
       </property>
      </widget>
     </widget>

@@ -3,7 +3,6 @@
 
 #include <QBluetoothSocket>
 #include "logger.h"
-
 #include <memory>
 #include <QObject>
 
@@ -16,7 +15,10 @@ private:
     Logger *log;
 
     QVector<QString> responseRegister;
+    QVector<QString> requestRegister;
     QByteArray lastResponse;
+    int lock=0;
+
 public:
     explicit ObdDataExchanger(QObject *parent = nullptr);
     ObdDataExchanger(QBluetoothSocket * ,Logger *);
@@ -27,7 +29,8 @@ public:
     QBluetoothSocket* getSocket();
 
    // void sendDataToElm327(QByteArray);
-    void sendDataToElm327(QString &);
+    void sendDataToElm327(const QString &);
+    void sendDataToElm327(const char*);
     QString getLastResponse();
 
 signals:

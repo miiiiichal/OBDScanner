@@ -1,6 +1,7 @@
 #include "obdscanner.h"
 #include "ui_obdscanner.h"
 #include "btconnector.h"
+
 #include <string>
 
 OBDScanner::OBDScanner(QWidget *parent) :
@@ -20,8 +21,6 @@ OBDScanner::OBDScanner(QWidget *parent) :
   mySharedData->log= new Logger("./logs/OBDScannerLog2.txt");
   //log->logInfo("Application statrs");
   mySharedData->log->logInfo("Application statrs");
-
-
 }
 
 OBDScanner::~OBDScanner()
@@ -136,18 +135,56 @@ void OBDScanner::on_cmd_sendButton_clicked()
 void OBDScanner::obdResponseDispatcher(const QString response)
 {
     mySharedData->log->logDebbug(QString("Response dispatcher"));
+    ObdDataParser dataParser;
+    std::vector<QString> resp= dataParser.prepareResponseToDecode(response);
+
     switch(activeTab){
         case ActiveTab::Info :
         {
+
             mySharedData->log->logDebbug(QString("response to INFO"));
             ui->info_testEdit->setText(QString("odpowiedz do zakładki info"));
-            //get car info
+            //get car info : fuel type,battery voltage, obd type, vin , etc.
             break;
         }
         case ActiveTab::Rtd :
         {
             mySharedData->log->logDebbug(QString("response to RTD"));
             ui->rtd_testEdit->setText(QString("odpowiedz do zakładki rtc"));
+            if(resp.size()>0 && !resp[2].compare("41",Qt::CaseInsensitive)){
+                int pid =std::stoi(resp[3].toStdString(),nullptr,16);
+                std::vector<QString> vec;
+                vec.insert(vec.begin(),resp.begin()+4, resp.end());
+                switch(pid){
+                    case 5:{
+                        //coolant
+                        int temp = dataParser.decodeCoolantTemp(vec);
+                        ui->coolantLcd->display(temp);
+
+                        break;
+                    }
+                    case 12:{
+                        //rpm;
+                        int rpm = dataParser.decodeEngineRPM(vec);
+                        ui->rpmLcd->display(rpm);
+                        break;
+                    }
+                    case 13 :{
+                        //speed
+                        int speed = dataParser.decodeKmHSpeed(vec);
+                        ui->speedLcd->display(speed);
+                        ui->speed_dial->setValue(speed);
+
+                        break;
+                    }
+                    case 15 : {
+                        //intake temp;
+                        int intake_temp = dataParser.decodeIntakeAirTemp(vec);
+                        ui->inTempLcd->display(intake_temp);
+                        break;
+                    }
+                }
+            }
             break;
         }
         case ActiveTab::Dtc :
@@ -175,16 +212,28 @@ void OBDScanner::getRTD()
     //current speed, rpm, coolant temp, intake temp
     int counter=0;
     mySharedData->log->logDebbug("starting RTD reading");
-    while(activeTab==ActiveTab::Rtd){
+ //   while(activeTab==ActiveTab::Rtd){
         //bezpiecznik
-        if(counter>100)
-            break;
-        else
+        //if(counter>100)
+            //break;
+       // else
             ++counter;
 
-        mySharedData->dataExchanger->sendDataToElm327(QString("01 0D"));
-        mySharedData->dataExchanger->sendDataToElm327(QString("01 0C"));
-        mySharedData->dataExchanger->sendDataToElm327(QString("01 05"));
+    //mySharedData->dataExchanger->sendDataToElm327(QString("01 0F"));
+    //mySharedData->dataExchanger->sendDataToElm327("01 0D");
+     //   mySharedData->dataExchanger->sendDataToElm327(QString("01 0C"));
+       mySharedData->dataExchanger->sendDataToElm327(QString("01 05"));
 
-    }
+  //  }
+}
+
+void OBDScanner::on_pushButton_clicked()
+{
+   obdResponseDispatcher(QString("41 0D 0C 00"));
+   obdResponseDispatcher(QString("41 0D 0d 00"));
+   obdResponseDispatcher(QString("41 0D 0E 00"));
+   obdResponseDispatcher(QString("41 0D 0F 00"));
+   obdResponseDispatcher(QString("41 0D 10 00"));
+   obdResponseDispatcher(QString("41 0C 0C 2E"));
+   obdResponseDispatcher(QString("41 05 0C 2E"));
 }
