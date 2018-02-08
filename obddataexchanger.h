@@ -5,6 +5,7 @@
 #include "logger.h"
 #include <memory>
 #include <QObject>
+#include <queue>
 
 
 class ObdDataExchanger : public QObject
@@ -15,9 +16,10 @@ private:
     Logger *log;
 
     QVector<QString> responseRegister;
-    QVector<QString> requestRegister;
+    std::queue<QString> requestRegister;
     QByteArray lastResponse;
-    int lock=0;
+    bool lockSocket=false;
+    bool continueRequesting=false;
 
 public:
     explicit ObdDataExchanger(QObject *parent = nullptr);
@@ -32,14 +34,21 @@ public:
     void sendDataToElm327(const QString &);
     void sendDataToElm327(const char*);
     QString getLastResponse();
+    void setContinueRequesting(bool);
+    bool getContinueRequesting();
+    void clearRegisters();
 
 signals:
     void readDataReady();
     void readDataReady(QString);
+    void sendNextRequest();
 
 public slots:
     void getDataFromElm327();
     void readingError(QBluetoothSocket::SocketError);
+  //  void writeToSocket(QString);
+    void writeToSocket();
+
 
 };
 

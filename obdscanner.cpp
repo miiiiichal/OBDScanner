@@ -84,6 +84,8 @@ void OBDScanner::getSignalFromConnector(QString str){
 void OBDScanner::on_tabWidget_tabBarClicked(int index)
 {
   mySharedData->log->logDebbug(QString("tab clicked -  idx: "+QString::number(index) ) );
+  mySharedData->dataExchanger->setContinueRequesting(false);
+  mySharedData->dataExchanger->clearRegisters();
   activeTab = index;
   switch(activeTab){
       case ActiveTab::Info :
@@ -136,8 +138,6 @@ void OBDScanner::obdResponseDispatcher(const QString response)
 {
     mySharedData->log->logDebbug(QString("Response dispatcher"));
     ObdDataParser dataParser;
-    std::vector<QString> resp= dataParser.prepareResponseToDecode(response);
-
     switch(activeTab){
         case ActiveTab::Info :
         {
@@ -149,9 +149,12 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         }
         case ActiveTab::Rtd :
         {
+            std::vector<QString> resp= dataParser.prepareResponseToDecode(response);
+            if(!resp[0].compare(QString("NO DATA"),Qt::CaseInsensitive))
+                return;
             mySharedData->log->logDebbug(QString("response to RTD"));
             ui->rtd_testEdit->setText(QString("odpowiedz do zakładki rtc"));
-            if(resp.size()>0 && !resp[2].compare("41",Qt::CaseInsensitive)){
+            if(resp.size()>2 && !resp[2].compare("41",Qt::CaseInsensitive)){
                 int pid =std::stoi(resp[3].toStdString(),nullptr,16);
                 std::vector<QString> vec;
                 vec.insert(vec.begin(),resp.begin()+4, resp.end());
@@ -160,7 +163,6 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                         //coolant
                         int temp = dataParser.decodeCoolantTemp(vec);
                         ui->coolantLcd->display(temp);
-
                         break;
                     }
                     case 12:{
@@ -217,12 +219,12 @@ void OBDScanner::getRTD()
         //if(counter>100)
             //break;
        // else
-            ++counter;
-
-    //mySharedData->dataExchanger->sendDataToElm327(QString("01 0F"));
-    //mySharedData->dataExchanger->sendDataToElm327("01 0D");
-     //   mySharedData->dataExchanger->sendDataToElm327(QString("01 0C"));
-       mySharedData->dataExchanger->sendDataToElm327(QString("01 05"));
+      //      ++counter;
+    mySharedData->dataExchanger->setContinueRequesting(true);
+    mySharedData->dataExchanger->sendDataToElm327(QString("01 0F"));
+    mySharedData->dataExchanger->sendDataToElm327("01 0D");
+    mySharedData->dataExchanger->sendDataToElm327(QString("01 0C"));
+    mySharedData->dataExchanger->sendDataToElm327(QString("01 05"));
 
   //  }
 }

@@ -10,6 +10,7 @@ ObdDataExchanger::ObdDataExchanger(QBluetoothSocket *socket, Logger *logger) : m
     log->logDebbug("DataExchanger Created");
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(getDataFromElm327()));
     connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(readingError(QBluetoothSocket::SocketError)));
+    connect(this,SIGNAL(sendNextRequest()),this,SLOT(writeToSocket()));
 }
 
 //ObdDataExchanger::ObdDataExchanger(std::shared_ptr<DataKeeper> &sharedData)
@@ -46,21 +47,28 @@ void ObdDataExchanger::sendDataToElm327(const QString &instr)
     QString instruction(instr);
     if(!instruction.isEmpty()){
         instruction.append("\r");
+        requestRegister.push(instruction);
+        log->logDebbug("Add next instr to queue");
+        emit(sendNextRequest());
+    }
+}
+
+void ObdDataExchanger::writeToSocket(){
+    if(!requestRegister.empty() && lockSocket==false){
+        QString instruction = requestRegister.front();
+        requestRegister.pop();
+        if(continueRequesting){
+            requestRegister.push(instruction);
+        }
         QByteArray buffer(instruction.toStdString().c_str());
         if(mySocket!=nullptr){
             mySocket->write(buffer);
+            lockSocket=true;
+            log->logDebbug("writing TO SOCKET");
             log->logInfo("write instr: "+instruction);
             //a w tym miejscu założony semafor
         }
     }
-}
-
-QString ObdDataExchanger::getLastResponse()
-{
-    if(responseRegister.isEmpty())
-        return QString("");
-    else
-        return QString(responseRegister.takeFirst());
 }
 
 void ObdDataExchanger::getDataFromElm327(){
@@ -70,11 +78,13 @@ void ObdDataExchanger::getDataFromElm327(){
            log->logDebbug("Reading FROM SOCKET : " + line);
            lastResponse.append(line);
            if(line.contains("\r\r")){
+                lockSocket=false;
                 responseRegister.push_back(QString(lastResponse));
                 log->logInfo("Read FROM SOCKET : whole response : " + lastResponse);
-                //w tym miejscu powinien być zwolniony semafor?? lockGuard??
                 emit readDataReady(getLastResponse());
+                emit sendNextRequest();
                 lastResponse.clear();
+
            }
         }
     }
@@ -82,6 +92,37 @@ void ObdDataExchanger::getDataFromElm327(){
         log->logInfo("Cannot read from socket" );
         log->logDebbug("isRedable() false ");
     }
+}
+
+
+QString ObdDataExchanger::getLastResponse()
+{
+    if(responseRegister.isEmpty())
+        return QString("");
+    else
+        return QString(responseRegister.takeFirst());
+}
+
+void ObdDataExchanger::setContinueRequesting(bool t_f_val)
+{
+    continueRequesting=t_f_val;
+}
+
+void ObdDataExchanger::clearRegisters()
+{
+    if(!responseRegister.empty())
+        responseRegister.clear();
+    if(!requestRegister.empty()){
+        std::queue<QString> emptyQueue;
+        std::swap(requestRegister,emptyQueue);
+    }
+    lockSocket = false;
+
+}
+
+bool ObdDataExchanger::getContinueRequesting()
+{
+    return continueRequesting;
 }
 
 void ObdDataExchanger::readingError(QBluetoothSocket::SocketError)

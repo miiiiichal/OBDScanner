@@ -14,6 +14,7 @@ std::vector<QString> result;
 result.reserve(8);
 std::string str(response_str.toStdString());
 
+std::replace(str.begin(),str.end(),'>',' ');
 size_t pos = str.find("\r\r",0);
 str.resize(pos);
 if(str[0]=='A' && str[1]=='T'){
@@ -63,6 +64,7 @@ return result;
 }
 
 int ObdDataParser::decodeKmHSpeed(const std::vector<QString> &hex_vals){
+    //010D -> A [0-255]
     int speed =0;
     if(hex_vals.size()>0){
         speed = std::stoi(hex_vals[0].toStdString(),nullptr,16);
@@ -70,8 +72,8 @@ int ObdDataParser::decodeKmHSpeed(const std::vector<QString> &hex_vals){
 return speed;
 }
 int ObdDataParser::decodeEngineRPM(const std::vector<QString> &hex_vals){
+    //010C -> (256A+B)/4
     int rpm =0;
-    //calc method (256A+B)/4
     if(hex_vals.size()>=2){
         int A = std::stoi(hex_vals[0].toStdString(),nullptr,16);
         int B = std::stoi(hex_vals[1].toStdString(),nullptr,16);
@@ -82,7 +84,7 @@ int ObdDataParser::decodeEngineRPM(const std::vector<QString> &hex_vals){
     return rpm;
 }
 int ObdDataParser::decodeCoolantTemp(const std::vector<QString> &hex_vals){
-    //result-40
+    //0105 -> result-40
     int temp=-99;
     if(hex_vals.size()>0){
         temp = std::stoi(hex_vals[0].toStdString(),nullptr,10);
