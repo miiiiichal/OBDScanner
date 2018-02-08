@@ -180,4 +180,8 @@ int ObdDataParser::decodeVehicleIdNumber(const std::vector<QString> &hex_vals){}
 34-250	Reserved
 251-255	Not available for assignment (SAE J1939 special meaning)
 
+
+
+01 21 - >Distance traveled with malfunction indicator lamp (MIL) on ->256A+B
+
 */

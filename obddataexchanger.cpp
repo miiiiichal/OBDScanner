@@ -81,7 +81,7 @@ void ObdDataExchanger::getDataFromElm327(){
                 lockSocket=false;
                 responseRegister.push_back(QString(lastResponse));
                 log->logInfo("Read FROM SOCKET : whole response : " + lastResponse);
-                emit readDataReady(getLastResponse());
+                emit readDataReady(lastResponse);
                 emit sendNextRequest();
                 lastResponse.clear();
 
@@ -100,7 +100,7 @@ QString ObdDataExchanger::getLastResponse()
     if(responseRegister.isEmpty())
         return QString("");
     else
-        return QString(responseRegister.takeFirst());
+        return QString(responseRegister.last());
 }
 
 void ObdDataExchanger::setContinueRequesting(bool t_f_val)
