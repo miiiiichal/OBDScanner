@@ -21,6 +21,7 @@ OBDScanner::OBDScanner(QWidget *parent) :
   mySharedData->log= new Logger("./logs/OBDScannerLog2.txt");
   //log->logInfo("Application statrs");
   mySharedData->log->logInfo("Application statrs");
+
 }
 
 OBDScanner::~OBDScanner()
@@ -99,14 +100,12 @@ void OBDScanner::on_tabWidget_tabBarClicked(int index)
       case ActiveTab::Rtd :
       {
           mySharedData->log->logDebbug(QString("query from RTD"));
-          ui->rtd_testEdit->setText(QString("rtd"));
           getRTD();
           break;
       }
       case ActiveTab::Dtc :
       {
           mySharedData->log->logDebbug(QString("response to DTC"));
-          ui->dtc_testEdit->setText(QString("odpowiedz do tej zakładki dtc"));
           break;
       }
       case ActiveTab::Cmd :
@@ -138,6 +137,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
 {
     mySharedData->log->logDebbug(QString("Response dispatcher"));
     ObdDataParser dataParser;
+    std::vector<QString> resp;
     switch(activeTab){
         case ActiveTab::Info :
         {
@@ -149,11 +149,10 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         }
         case ActiveTab::Rtd :
         {
-            std::vector<QString> resp= dataParser.prepareResponseToDecode(response);
+            resp= dataParser.prepareResponseToDecode(response);
             if(!resp[0].compare(QString("NO DATA"),Qt::CaseInsensitive))
                 return;
             mySharedData->log->logDebbug(QString("response to RTD"));
-            ui->rtd_testEdit->setText(QString("odpowiedz do zakładki rtc"));
             if(resp.size()>2 && !resp[2].compare("41",Qt::CaseInsensitive)){
                 int pid =std::stoi(resp[3].toStdString(),nullptr,16);
                 std::vector<QString> vec;
@@ -163,12 +162,14 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                         //coolant
                         int temp = dataParser.decodeCoolantTemp(vec);
                         ui->coolantLcd->display(temp);
+                        ui->coolant_dial->setValue(temp);
                         break;
                     }
                     case 12:{
                         //rpm;
                         int rpm = dataParser.decodeEngineRPM(vec);
                         ui->rpmLcd->display(rpm);
+                        ui->rpm_dial->setValue(rpm);
                         break;
                     }
                     case 13 :{
@@ -183,6 +184,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                         //intake temp;
                         int intake_temp = dataParser.decodeIntakeAirTemp(vec);
                         ui->inTempLcd->display(intake_temp);
+                        ui->intake_dial->setValue(intake_temp);
                         break;
                     }
                 }
@@ -191,8 +193,21 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         }
         case ActiveTab::Dtc :
         {
+            //0101 -> 41 01 82 00 00 00
+        //03 --
             mySharedData->log->logDebbug(QString("response to DTC"));
-            ui->dtc_testEdit->setText(QString("odpowiedz do tej zakładki dtc"));
+            std::vector<QString> vec;
+            resp= dataParser.prepareResponseToDecode(response);
+            if(!resp[0].compare(QString("NO DATA"),Qt::CaseInsensitive)){
+                return;
+            }
+
+            if(resp.size()>2 && !resp[2].compare("41",Qt::CaseInsensitive)){
+                vec.insert(vec.begin(),resp.begin()+4, resp.end());
+                std::pair<int,bool> dtcNumber = dataParser.decodeNumberOfDtc(vec);
+                ui->dtc_numberEdit->setText(QString::number(dtcNumber.first));
+                ui->dtc_milIndicatorON->setChecked(dtcNumber.second);
+            }
             break;
         }
         case ActiveTab::Cmd :

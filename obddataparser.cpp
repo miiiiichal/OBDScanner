@@ -6,10 +6,24 @@ ObdDataParser::ObdDataParser()
 
 }
 
+std::vector<QString> ObdDataParser::decodeDTC(const std::vector<QString> &)
+{
+/*
+43 12 29 03 80 00 00
+
+12 29 03 80=>
+P1229
+P0	380
+*/
+
+}
+
 std::vector<QString> ObdDataParser::prepareResponseToDecode(const QString &response_str)
 {
 //std::string str("41  0C  81 33 00 ");
 //010C\rSEARCHING...\r...41 0C 00 00 \r\r>
+
+// !!!! 0101>\r 41 01 82 00 00 00\r\r> !!!! not working
 std::vector<QString> result;
 result.reserve(8);
 std::string str(response_str.toStdString());
@@ -106,6 +120,25 @@ return temp;
 }
 
 int ObdDataParser::decodeVehicleIdNumber(const std::vector<QString> &hex_vals){}
+
+std::pair<int,bool> ObdDataParser::decodeNumberOfDtc(const std::vector<QString> &hex_vals)
+{
+    //82 00 00 00
+    int dtcNumber=0;
+    bool milOn= false;
+    int number= std::stoi(hex_vals[0].toStdString(),nullptr,16);
+    if(number-128 < 0) {
+        dtcNumber=number;
+    }
+    else{
+        dtcNumber=number-128;
+        milOn=true;
+    }
+    return std::make_pair(dtcNumber,milOn);
+
+}
+
+
 
 
 // 012F = Fuel Tank Level Input	0-100 % ->	100/255 * A
