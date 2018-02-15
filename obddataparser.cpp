@@ -6,7 +6,7 @@ ObdDataParser::ObdDataParser()
 
 }
 
-std::vector<QString> ObdDataParser::decodeDTC(const std::vector<QString> &)
+std::vector<QString> ObdDataParser::decodeDTC(const std::vector<QString> &hex_vals)
 {
 /*
 43 12 29 03 80 00 00
@@ -15,7 +15,28 @@ std::vector<QString> ObdDataParser::decodeDTC(const std::vector<QString> &)
 P1229
 P0	380
 */
-
+    std::vector<QString> dtc_codes;
+    QString dtc_code;
+    if(hex_vals.size()>0 && !hex_vals[0].compare("43", Qt::CaseInsensitive)){
+        QString tmp_code;
+        for(int it=1;it<hex_vals.size();++it){
+            if(it%2!=0){
+                tmp_code.append(hex_vals[it]);
+                char x=tmp_code.toStdString()[0];
+                auto itMap = this->dtcPrefix.find(x);
+                dtc_code.append((*itMap).second);
+                dtc_code.append(tmp_code[1]);
+            }
+            else{
+                dtc_code.append(hex_vals[it]);
+                if(dtc_code.compare("P0000", Qt::CaseInsensitive)!=0)
+                    dtc_codes.push_back(dtc_code);
+                tmp_code.clear();
+                dtc_code.clear();
+            }
+        }
+    }
+    return dtc_codes;
 }
 
 std::vector<QString> ObdDataParser::prepareResponseToDecode(const QString &response_str)
@@ -30,7 +51,8 @@ std::string str(response_str.toStdString());
 
 std::replace(str.begin(),str.end(),'>',' ');
 size_t pos = str.find("\r\r",0);
-str.resize(pos);
+if(pos!=std::string::npos)
+    str.resize(pos);
 if(str[0]=='A' && str[1]=='T'){
     result.push_back(response_str);
 }

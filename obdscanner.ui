@@ -85,7 +85,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <property name="tabsClosable">
      <bool>false</bool>
@@ -627,7 +627,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>MIL turned on</string>
+         <string>&amp;MIL turned on</string>
         </property>
        </widget>
       </widget>

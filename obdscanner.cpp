@@ -67,8 +67,8 @@ void OBDScanner::getSocketFromConnector(QBluetoothSocket *mySocket, QString sele
         mySharedData->dataExchanger = new ObdDataExchanger(mySharedData->mySocket,mySharedData->log);
         if(mySocket==mySharedData->mySocket)
             mySharedData->log->logDebbug("socket returned from BtConnector by signal and socket stored in mySharedData are equal");
-
         connect(mySharedData->dataExchanger,SIGNAL(readDataReady(QString)),this,SLOT(obdResponseDispatcher(QString)));
+        mySharedData->dataExchanger->sendDataToElm327("AT SP 0");
     }
 }
 void OBDScanner::getDeviceInfoFromConnector(QBluetoothDeviceInfo *deviceInfo){
@@ -85,36 +85,38 @@ void OBDScanner::getSignalFromConnector(QString str){
 void OBDScanner::on_tabWidget_tabBarClicked(int index)
 {
   mySharedData->log->logDebbug(QString("tab clicked -  idx: "+QString::number(index) ) );
-  mySharedData->dataExchanger->setContinueRequesting(false);
-  mySharedData->dataExchanger->clearRegisters();
-  activeTab = index;
-  switch(activeTab){
-      case ActiveTab::Info :
-      {
-          mySharedData->log->logDebbug(QString("query from INFO"));
-          ui->info_testEdit->setText(QString(""));
-          //get car info
+  if(mySharedData->mySocket!=nullptr && mySharedData->mySocket->state()== QBluetoothSocket::ReadWrite){
+      mySharedData->dataExchanger->setContinueRequesting(false);
+      mySharedData->dataExchanger->clearRegisters();
+      activeTab = index;
+      switch(activeTab){
+          case ActiveTab::Info :
+          {
+              mySharedData->log->logDebbug(QString("query from INFO"));
+              ui->info_testEdit->setText(QString(""));
+              //get car info
 
-          break;
+              break;
+          }
+          case ActiveTab::Rtd :
+          {
+              mySharedData->log->logDebbug(QString("query from RTD"));
+              getRTD();
+              break;
+          }
+          case ActiveTab::Dtc :
+          {
+              mySharedData->log->logDebbug(QString("response to DTC"));
+              break;
+          }
+          case ActiveTab::Cmd :
+          {
+              mySharedData->log->logDebbug(QString("query from CMD"));
+             // ui->cmd_console->append();
+              break;
+          }
       }
-      case ActiveTab::Rtd :
-      {
-          mySharedData->log->logDebbug(QString("query from RTD"));
-          getRTD();
-          break;
-      }
-      case ActiveTab::Dtc :
-      {
-          mySharedData->log->logDebbug(QString("response to DTC"));
-          break;
-      }
-      case ActiveTab::Cmd :
-      {
-          mySharedData->log->logDebbug(QString("query from CMD"));
-         // ui->cmd_console->append();
-          break;
-      }
-  }
+    }
 }
 
 void OBDScanner::on_cmd_clearButton_clicked()
@@ -126,7 +128,7 @@ void OBDScanner::on_cmd_clearButton_clicked()
 void OBDScanner::on_cmd_sendButton_clicked()
 {
     QString cmd = ui->cmd_input->text();
-    if(!cmd.isEmpty()){
+    if(mySharedData->dataExchanger!=nullptr && !cmd.isEmpty()){
         mySharedData->dataExchanger->sendDataToElm327(cmd);
         ui->cmd_console->append("> "+cmd);
         mySharedData->log->logInfo(cmd);
@@ -136,7 +138,7 @@ void OBDScanner::on_cmd_sendButton_clicked()
 void OBDScanner::obdResponseDispatcher(const QString response)
 {
     mySharedData->log->logDebbug(QString("Response dispatcher"));
-    ObdDataParser dataParser;
+    //ObdDataParser dataParser;
     std::vector<QString> resp;
     switch(activeTab){
         case ActiveTab::Info :
@@ -149,7 +151,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         }
         case ActiveTab::Rtd :
         {
-            resp= dataParser.prepareResponseToDecode(response);
+            resp= mySharedData->dataParser.prepareResponseToDecode(response);
             if(!resp[0].compare(QString("NO DATA"),Qt::CaseInsensitive))
                 return;
             mySharedData->log->logDebbug(QString("response to RTD"));
@@ -160,21 +162,21 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                 switch(pid){
                     case 5:{
                         //coolant
-                        int temp = dataParser.decodeCoolantTemp(vec);
+                        int temp = mySharedData->dataParser.decodeCoolantTemp(vec);
                         ui->coolantLcd->display(temp);
                         ui->coolant_dial->setValue(temp);
                         break;
                     }
                     case 12:{
                         //rpm;
-                        int rpm = dataParser.decodeEngineRPM(vec);
+                        int rpm = mySharedData->dataParser.decodeEngineRPM(vec);
                         ui->rpmLcd->display(rpm);
                         ui->rpm_dial->setValue(rpm);
                         break;
                     }
                     case 13 :{
                         //speed
-                        int speed = dataParser.decodeKmHSpeed(vec);
+                        int speed = mySharedData->dataParser.decodeKmHSpeed(vec);
                         ui->speedLcd->display(speed);
                         ui->speed_dial->setValue(speed);
 
@@ -182,7 +184,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                     }
                     case 15 : {
                         //intake temp;
-                        int intake_temp = dataParser.decodeIntakeAirTemp(vec);
+                        int intake_temp = mySharedData->dataParser.decodeIntakeAirTemp(vec);
                         ui->inTempLcd->display(intake_temp);
                         ui->intake_dial->setValue(intake_temp);
                         break;
@@ -197,16 +199,29 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         //03 --
             mySharedData->log->logDebbug(QString("response to DTC"));
             std::vector<QString> vec;
-            resp= dataParser.prepareResponseToDecode(response);
+            resp= mySharedData->dataParser.prepareResponseToDecode(response);
             if(!resp[0].compare(QString("NO DATA"),Qt::CaseInsensitive)){
                 return;
             }
-
-            if(resp.size()>2 && !resp[2].compare("41",Qt::CaseInsensitive)){
+            //number of dtc & mil
+            if(resp.size()>2 && !resp[2].compare("41",Qt::CaseInsensitive) && !resp[3].compare("01",Qt::CaseInsensitive)){
                 vec.insert(vec.begin(),resp.begin()+4, resp.end());
-                std::pair<int,bool> dtcNumber = dataParser.decodeNumberOfDtc(vec);
+                std::pair<int,bool> dtcNumber = mySharedData->dataParser.decodeNumberOfDtc(vec);
                 ui->dtc_numberEdit->setText(QString::number(dtcNumber.first));
                 ui->dtc_milIndicatorON->setChecked(dtcNumber.second);
+            }
+            //dtc codes
+            if(resp.size()>2 && !resp[1].compare("43",Qt::CaseInsensitive)){
+               vec.insert(vec.begin(),resp.begin()+1, resp.end());
+               std::vector<QString> dtcCodes( mySharedData->dataParser.decodeDTC(vec));
+               if(dtcCodes.size()>0){
+                   for(auto &code : dtcCodes){
+
+                       ui->dtc_descriptionEdit->append(code);
+                       ui->dtc_descriptionEdit->append(QString("-----------------------------"));
+                   }
+               }
+
             }
             break;
         }
@@ -244,13 +259,15 @@ void OBDScanner::getRTD()
   //  }
 }
 
-void OBDScanner::on_pushButton_clicked()
+void OBDScanner::on_dtc_checkErrNumberButton_clicked()
 {
-   obdResponseDispatcher(QString("41 0D 0C 00"));
-   obdResponseDispatcher(QString("41 0D 0d 00"));
-   obdResponseDispatcher(QString("41 0D 0E 00"));
-   obdResponseDispatcher(QString("41 0D 0F 00"));
-   obdResponseDispatcher(QString("41 0D 10 00"));
-   obdResponseDispatcher(QString("41 0C 0C 2E"));
-   obdResponseDispatcher(QString("41 05 0C 2E"));
+    if(mySharedData->dataExchanger!=nullptr)
+        mySharedData->dataExchanger->sendDataToElm327("01 01");
+}
+
+void OBDScanner::on_dtc_getErrCodesButton_clicked()
+{
+    if(mySharedData->dataExchanger!=nullptr)
+        mySharedData->dataExchanger->sendDataToElm327("03");
+
 }

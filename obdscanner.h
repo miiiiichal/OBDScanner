@@ -27,15 +27,6 @@ public:
         Cmd
     };
 
-//TEST
-    struct myData2{
-        std::shared_ptr<QBluetoothSocket> socketPtr;
-        QBluetoothLocalDevice localDevice;
-        ObdDataExchanger *dataExchanger;
-        Logger *log;
-        QBluetoothSocket *mySocket;
-    }  ;
-
   explicit OBDScanner(QWidget *parent = 0);
   ~OBDScanner();
 
@@ -56,6 +47,10 @@ private slots:
   void getRTD();
 
   void on_pushButton_clicked();
+
+  void on_dtc_checkErrNumberButton_clicked();
+
+  void on_dtc_getErrCodesButton_clicked();
 
 private:
   Ui::OBDScanner *ui;

@@ -69,7 +69,7 @@ BtConnector::BtConnector(std::shared_ptr<DataKeeper> &a2, QWidget *parent) :
     ui(new Ui::BtConnector)
 {
     ui->setupUi(this);
-    spSharedData->test="btConnector text by sharedptr";
+   // spSharedData->test="btConnector text by sharedptr";
     localDevAddr = spSharedData->localDevice->address();
     localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
     serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);

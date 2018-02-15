@@ -17,6 +17,7 @@ DataKeeper::DataKeeper( const DataKeeper &other)
     dataExchanger = other.dataExchanger;
     log = other.log;
     mySocket = other.mySocket;
+    dataParser= other.dataParser;
 
 }
 
@@ -27,6 +28,7 @@ DataKeeper::DataKeeper(DataKeeper *other)
         this->dataExchanger = other->dataExchanger;
         this->log = other->log;
         this->mySocket = other->mySocket;
+        this->dataParser=other->dataParser;
     }
 }
 
@@ -35,6 +37,7 @@ DataKeeper& DataKeeper::operator=(const DataKeeper &other){
     this->dataExchanger = other.dataExchanger;
     this->log = other.log;
     this->mySocket = other.mySocket;
+    this->dataParser = other.dataParser;
 
     return *this;
 }

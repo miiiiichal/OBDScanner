@@ -4,7 +4,7 @@
 #include <QBluetoothLocalDevice>
 #include <QBluetoothSocket>
 #include "logger.h"
-
+#include "obddataparser.h"
 #include "obddataexchanger.h"
 
 class DataKeeper
@@ -16,11 +16,14 @@ public:
     DataKeeper& operator=(const DataKeeper &);
     DataKeeper(DataKeeper *);
 
-    QBluetoothLocalDevice *localDevice;
-    ObdDataExchanger *dataExchanger;
-    Logger *log;
-    QBluetoothSocket *mySocket;
+    QBluetoothLocalDevice *localDevice = nullptr;
+    ObdDataExchanger *dataExchanger = nullptr;
+    Logger *log = nullptr;
+    QBluetoothSocket *mySocket = nullptr;
+    ObdDataParser dataParser;
+
     QString test ="aaaaa";
+
 };
 
 #endif // DATAKEEPER_H
