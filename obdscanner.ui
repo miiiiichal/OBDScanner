@@ -93,21 +93,6 @@
     <property name="tabBarAutoHide">
      <bool>false</bool>
     </property>
-    <widget class="QWidget" name="vin_tab">
-     <attribute name="title">
-      <string>Info</string>
-     </attribute>
-     <widget class="QLineEdit" name="info_testEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>113</width>
-        <height>25</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
     <widget class="QWidget" name="rtd_tab">
      <attribute name="title">
       <string>RTD</string>
@@ -618,6 +603,9 @@
         </property>
        </widget>
        <widget class="QRadioButton" name="dtc_milIndicatorON">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>240</x>
@@ -689,6 +677,19 @@
        <string>clear</string>
       </property>
      </widget>
+    </widget>
+    <widget class="QWidget" name="widget">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <kerning>true</kerning>
+      </font>
+     </property>
+     <attribute name="title">
+      <string>Info</string>
+     </attribute>
     </widget>
    </widget>
   </widget>
