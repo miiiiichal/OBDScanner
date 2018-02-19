@@ -1,12 +1,11 @@
 #include "btconnector.h"
 #include "logger.h"
 #include "ui_btconnector.h"
-
 #include <iostream>
 #include <string>
 #include <sstream>
 
-
+/*
 BtConnector::BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *parent) :
   QDialog(parent),
   log(log),
@@ -34,9 +33,61 @@ BtConnector::BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *
   connect(&localDev, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
   connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
   connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
-
   log->logDebbug("btConnector created");
+}
 
+BtConnector::BtConnector(DataKeeper &a, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::BtConnector)
+{
+    ui->setupUi(this);
+
+    sharedData = a;
+    localDevAddr = sharedData.localDevice->address();
+    localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
+    serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);
+
+    //interface init vals
+    ui->lineEdit_address->setText(localDevAddr.toString());
+    ui->lineEdit_name->setText(sharedData.localDevice->name());
+    setWindowTitle("Bluetooth device management dialog");
+
+    // my Signal->Slot actions
+    connect(ui->buttonClose, SIGNAL(clicked()),this,SLOT(close()) );
+    connect(localDiscoveryAgent , SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)) , this , SLOT(addFoundDevice(QBluetoothDeviceInfo)));
+    connect(localDiscoveryAgent , SIGNAL(finished()) , this , SLOT(stopScanning()));
+    connect(serviceDiscoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
+    connect(sharedData.localDevice, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
+    connect(sharedData.localDevice,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),sharedData.localDevice,SLOT(pairingConfirmation(bool)) );
+    connect(sharedData.localDevice,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
+    sharedData.log->logDebbug("btConnector created");
+}
+*/
+BtConnector::BtConnector(std::shared_ptr<DataKeeper> &a2, QWidget *parent) :
+    QDialog(parent),
+    spSharedData(a2),
+    ui(new Ui::BtConnector)
+{
+    ui->setupUi(this);
+   // spSharedData->test="btConnector text by sharedptr";
+    localDevAddr = spSharedData->localDevice->address();
+    localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
+    serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);
+
+    //interface init vals
+    ui->lineEdit_address->setText(localDevAddr.toString());
+    ui->lineEdit_name->setText(spSharedData->localDevice->name());
+    setWindowTitle("Bluetooth device management dialog");
+
+    // my Signal->Slot actions
+    connect(ui->buttonClose, SIGNAL(clicked()),this,SLOT(close()) );
+    connect(localDiscoveryAgent , SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)) , this , SLOT(addFoundDevice(QBluetoothDeviceInfo)));
+    connect(localDiscoveryAgent , SIGNAL(finished()) , this , SLOT(stopScanning()));
+    connect(serviceDiscoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
+    connect(spSharedData->localDevice, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
+    connect(spSharedData->localDevice,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),spSharedData->localDevice,SLOT(pairingConfirmation(bool)) );
+    connect(spSharedData->localDevice,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
+    spSharedData->log->logDebbug("btConnector created");
 }
 
 BtConnector::~BtConnector()
@@ -44,7 +95,7 @@ BtConnector::~BtConnector()
   delete localDiscoveryAgent;
   delete serviceDiscoveryAgent;
   delete ui;
-  log->logDebbug("btConnector destroyed");
+  spSharedData->log->logDebbug("btConnector destroyed");
 }
 
 
@@ -57,20 +108,20 @@ void BtConnector::startScanning(){
 
   localDiscoveryAgent->start();
   ui->buttonScan->setEnabled(false);
-  log->logDebbug("Scanning BT devices statrs");
+  spSharedData->log->logDebbug("Scanning BT devices statrs");
   }
 
 void BtConnector::stopScanning(){
 
   localDiscoveryAgent->stop();
   ui->buttonScan->setEnabled(true);
-  log->logDebbug("Scanning BT devices finished");
+  spSharedData->log->logDebbug("Scanning BT devices finished");
 }
 void BtConnector::addFoundDevice(QBluetoothDeviceInfo deviceInfo){
-  log->logDebbug("Found device: "+deviceInfo.name() +" : "+deviceInfo.address().toString());
+  spSharedData->log->logDebbug("Found device: "+deviceInfo.name() +" : "+deviceInfo.address().toString());
   if(deviceInfo.isValid() && !deviceInfo.isCached()){
     QListWidgetItem *foundDeviceName = new QListWidgetItem(deviceInfo.name() + " | " +deviceInfo.address().toString());
-    if(localDevice->pairingStatus(deviceInfo.address())==1)
+    if(spSharedData->localDevice->pairingStatus(deviceInfo.address())==1)
       foundDeviceName->setBackgroundColor(QColor("green"));
     QList<QListWidgetItem *> items = ui->listDevicesNearby->findItems(deviceInfo.name() + " | " +deviceInfo.address().toString(), Qt::MatchExactly );
     if(items.empty())
@@ -131,7 +182,7 @@ void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
   remoteDeviceInfo+="isValid : ";
   remoteDeviceInfo+=serviceInfo.isValid();
 
-  log->logDebbug(remoteDeviceInfo);
+  spSharedData->log->logDebbug(remoteDeviceInfo);
 
   ui->textEdit->setText("service discovery: \n"+remoteDeviceInfo);
 }
@@ -139,25 +190,25 @@ void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
 
 void BtConnector::on_buttonPair_clicked()
 {
-  log->logDebbug("Pair button click");
-  if(localDevice->isValid()){
-    log->logDebbug("PAIR: localDevice is valid");
+  spSharedData->log->logDebbug("Pair button click");
+  if(spSharedData->localDevice->isValid()){
+    spSharedData->log->logDebbug("PAIR: spSharedData->localDevice is valid");
     QBluetoothDeviceInfo selectedRemoteDevice = getSelectedRemoteDevice();
         if(selectedRemoteDevice.isValid()){
-        log->logDebbug("PAIR: selectedRemoteDev is VALID & selectedRemoteDevName: "+selectedRemoteDevice.name() +" selectedRemoteDevAddr: "+selectedRemoteDevice.address().toString());
-        QBluetoothLocalDevice::Pairing stat = localDevice->pairingStatus(selectedRemoteDevice.address());
+        spSharedData->log->logDebbug("PAIR: selectedRemoteDev is VALID & selectedRemoteDevName: "+selectedRemoteDevice.name() +" selectedRemoteDevAddr: "+selectedRemoteDevice.address().toString());
+        QBluetoothLocalDevice::Pairing stat = spSharedData->localDevice->pairingStatus(selectedRemoteDevice.address());
         QString sta= (stat== QBluetoothLocalDevice::Unpaired? "true" :"false");
-        log->logDebbug("PAIR: selectedRemoteDev pairing status is unpaired ? : " + sta);
+        spSharedData->log->logDebbug("PAIR: selectedRemoteDev pairing status is unpaired ? : " + sta);
         if(stat== QBluetoothLocalDevice::Unpaired){
-          log->logDebbug("Request pairing with "+selectedRemoteDevice.name());
-          localDevice->requestPairing(selectedRemoteDevice.address(),QBluetoothLocalDevice::Paired);
+          spSharedData->log->logDebbug("Request pairing with "+selectedRemoteDevice.name());
+          spSharedData->localDevice->requestPairing(selectedRemoteDevice.address(),QBluetoothLocalDevice::Paired);
         }
         else{
             sta= (stat== QBluetoothLocalDevice::Paired? "true" :"false");
-            log->logDebbug("PAIR: selectedRemoteDev pairing status is paired ? : " + sta);
+            spSharedData->log->logDebbug("PAIR: selectedRemoteDev pairing status is paired ? : " + sta);
             sta= (stat== QBluetoothLocalDevice::AuthorizedPaired? "true" :"false");
-            log->logDebbug("PAIR: selectedRemoteDev pairing status is AuthPaired ? : " + sta);
-            emit(localDevice->pairingFinished(selectedRemoteDevice.address(),stat));
+            spSharedData->log->logDebbug("PAIR: selectedRemoteDev pairing status is AuthPaired ? : " + sta);
+            emit(spSharedData->localDevice->pairingFinished(selectedRemoteDevice.address(),stat));
         }
 
     }
@@ -165,12 +216,12 @@ void BtConnector::on_buttonPair_clicked()
 }
 void BtConnector::on_buttonUnpair_clicked()
 {
-  if(localDevice->isValid()){
+  if(spSharedData->localDevice->isValid()){
     QBluetoothDeviceInfo selectedRemoteDevice = getSelectedRemoteDevice();
     if(selectedRemoteDevice.isValid()){
-        if(localDevice->pairingStatus(selectedRemoteDevice.address()) !=QBluetoothLocalDevice::Unpaired){
-          log->logDebbug("Request unpairing with "+selectedRemoteDevice.name());
-          localDevice->requestPairing(selectedRemoteDevice.address(),QBluetoothLocalDevice::Unpaired);
+        if(spSharedData->localDevice->pairingStatus(selectedRemoteDevice.address()) !=QBluetoothLocalDevice::Unpaired){
+          spSharedData->log->logDebbug("Request unpairing with "+selectedRemoteDevice.name());
+          spSharedData->localDevice->requestPairing(selectedRemoteDevice.address(),QBluetoothLocalDevice::Unpaired);
           }
     }
   }
@@ -190,8 +241,7 @@ QBluetoothDeviceInfo BtConnector::getSelectedRemoteDevice(){
             }
         }
     }
-  log->logDebbug("selected device : "+selectedRemoteDevice.name());
-  emit(testSignal(selectedRemoteDevice.name()));
+  spSharedData->log->logDebbug("selected device : "+selectedRemoteDevice.name());
   return selectedRemoteDevice;
 }
 
@@ -212,18 +262,18 @@ void BtConnector::finishPairing(QBluetoothAddress addr, QBluetoothLocalDevice::P
             break;
             }
         }
-      log->logDebbug("PAIRING FINISH : paired with "+ name);
+      spSharedData->log->logDebbug("PAIRING FINISH : paired with "+ name);
       if(!name.isEmpty()){
         QList<QListWidgetItem *> items = ui->listDevicesNearby->selectedItems();
         if(items.size()==1){
           QListWidgetItem *item = items.first();
           if(status == QBluetoothLocalDevice::Paired || status == QBluetoothLocalDevice::AuthorizedPaired){
-              log->logDebbug("device paired");
+              spSharedData->log->logDebbug("device paired");
             item->setBackgroundColor(QColor("green"));
           }
           else{
             item->setBackgroundColor(QColor("white"));
-            log->logDebbug("Device unpaired");
+            spSharedData->log->logDebbug("Device unpaired");
           }
         }
       }
@@ -235,60 +285,71 @@ void BtConnector::finishPairing(QBluetoothAddress addr, QBluetoothLocalDevice::P
 
 void BtConnector::on_buttonConnect_clicked()
 {
-   log->logDebbug("connect device button clicked");
+   spSharedData->log->logDebbug("connect device button clicked");
+   spSharedData->test="onClick change by object ";
    selectedDevice = new QBluetoothDeviceInfo(getSelectedRemoteDevice());
+
+   spSharedData->test="onClick change by sharedptr";
+
    QBluetoothDeviceInfo selectedRemoteDevice=*selectedDevice;
-   mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol, this);
-   connect(mySocket, SIGNAL(connected()),this,SLOT(socketConnected()));
-   connect(mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
-   connect(mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
-   connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
-  // connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*)), this, SLOT(close()));
-   //connect(mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(close()));
-   mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
+   spSharedData->mySocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
+   connect(spSharedData->mySocket, SIGNAL(connected()),this,SLOT(socketConnected()));
+   connect(spSharedData->mySocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+   //connect(spSharedData->mySocket, SIGNAL(readyRead()), this, SLOT(socketRead()));
+   connect(spSharedData->mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(socketError(QBluetoothSocket::SocketError)));
+   connect(this, SIGNAL(conectedToSocket(QBluetoothSocket*, QString)), this, SLOT(close()));
+   //connect(spSharedData->mySocket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(close()));
+
+   spSharedData->mySocket->connectToService(selectedRemoteDevice.address(),QBluetoothUuid::SerialPort , QIODevice::ReadWrite);
 
 //Serial Port Profile - serviceName dev: ODBII
 }
 
 
 void BtConnector::socketConnected(){
-  if(mySocket->state()==QBluetoothSocket::ConnectedState){
-    log->logDebbug("socket connected");
+  if(spSharedData->mySocket->state()==QBluetoothSocket::ConnectedState){
+    emit(conectedToSocket(spSharedData->mySocket,selectedDevice->name()));
+    // wyłączone - zmiana obsługi pisania do elm327 na klase exchanget
+   /*
+    //* zakomentowane żeby sprawdzić poprawność działania połączenia z socketem w obdScanerze a nie w connectorze
+    dataEx = new ObdDataExchanger(spSharedData->mySocket,spSharedData->log);
+    connect(spSharedData->mySocket, SIGNAL(readyRead()), dataEx, SLOT(getDataFromElm327()));
+    */
+    spSharedData->log->logDebbug("socket connected");
     debugInfo("connected");
-    //emmit() // emit signal connected socket
-    emit(conectedToSocket(mySocket));
-    // wyłączone - komunikacja przeniesiona do okna gł.
-
-
   }
   else{
-      log->logDebbug("socket status : not connected ");
+      spSharedData->log->logDebbug("socket status : not connected ");
     }
 }
 
 void BtConnector::socketDisconnected(){
-  log->logDebbug("socket disconnected");
-  if(mySocket)
-    delete mySocket;
+  spSharedData->log->logDebbug("socket disconnected");
+  if(spSharedData->mySocket)
+    spSharedData->mySocket=nullptr;
 }
 void BtConnector::socketRead(){
-     log->logDebbug("reading from socket");
-      QByteArray line = mySocket->readAll();
+     spSharedData->log->logDebbug("reading from socket");
 
-      log->logInfo("Read FROM SOCKET : raw " + line);
-      debugInfo("\nOdp :" + line);
+     if(spSharedData->mySocket->bytesAvailable()>0){
+        QByteArray line = spSharedData->mySocket->readLine();
+        spSharedData->log->logInfo("Read FROM SOCKET : raw " + line);
+        debugInfo("\nOdp :" + line);
+     }
+     spSharedData->log->logDebbug("reading finish- canReadLine)() false");
+
 }
 void BtConnector::socketError(QBluetoothSocket::SocketError){
-  //debugInfo("err: " + mySocket->errorString());
-  log->logDebbug("err: " + mySocket->errorString());
+  //debugInfo("err: " + spSharedData->mySocket->errorString());
+  spSharedData->log->logDebbug("err: " + spSharedData->mySocket->errorString());
   emit(notConectedToSocket(selectedDevice));
   }
 
 void BtConnector::on_buttonDisconnect_clicked()
 {
-    log->logDebbug("clicked disconnect buton");
-    if(mySocket->isOpen() &&  mySocket->state() != QBluetoothSocket::UnconnectedState){
-      mySocket->disconnectFromService();
+    spSharedData->log->logDebbug("clicked disconnect buton");
+    if(spSharedData->mySocket->isOpen() &&  spSharedData->mySocket->state() != QBluetoothSocket::UnconnectedState){
+      spSharedData->mySocket->disconnectFromService();
       }
 }
 
@@ -296,13 +357,28 @@ void BtConnector::on_buttonDisconnect_clicked()
 void BtConnector::on_pushButton_clicked()
 {
     QString instruction(ui->inputInstr->text());
+//    dataEx->sendDataToElm327(instruction);
+//    return;
     instruction.append("\r");
     QByteArray buffer(instruction.toStdString().c_str());
-    mySocket->write(buffer);
-    log->logInfo("write instr: "+instruction);
+    if(spSharedData->mySocket!=nullptr)
+        spSharedData->mySocket->write(buffer);
+    spSharedData->log->logInfo("write instr: "+instruction);
     debugInfo("send :" + instruction);
-   // while (mySocket->canReadLine()) {
-    QByteArray line = this->mySocket->readAll();
-    log->logDebbug("ReadFROMSOCKET after write: "+QString::fromUtf8(line.constData(), line.length()));
+   // while (spSharedData->mySocket->canReadLine()) {
+   // QByteArray line = this->spSharedData->mySocket->readAll();
+   // spSharedData->log->logDebbug("ReadFROMSOCKET after write: "+QString::fromUtf8(line.constData(), line.length()));
    // }
+}
+
+void BtConnector::on_pushButton_2_clicked()
+{
+    spSharedData->log->logDebbug("emitting testSignal ");
+    emit testSignal(QString("ssssssssss"));
+    spSharedData->log->logDebbug("emitting connectedToSocket ");
+    emit(conectedToSocket(new QBluetoothSocket()));
+}
+
+void BtConnector::localSignalCatcher(QString s){
+    spSharedData->log->logDebbug("catching test signal in btconnector : "+ s);
 }

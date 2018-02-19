@@ -24,6 +24,7 @@ public:
 //  Logger(QString, Logger::LogLevel);
   ~Logger();
 
+
   LogLevel getLogLevel();
   void setLogLevel(Logger::LogLevel level);
   void logError(QString);
@@ -32,7 +33,7 @@ public:
 
 
 private:
-QFile *logFile;
+QFile *logFile = nullptr;
 QString filePath = "./logs/OBDScannerLog.txt";
 LogLevel logLevel = LogLevel::Debbug;
 void writeToLog(QString);

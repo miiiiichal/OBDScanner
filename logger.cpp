@@ -31,6 +31,7 @@ Logger::~Logger()
  delete logFile;
 }
 
+
 void Logger::writeToLog(QString textToWrite)
 {
   if(!logFile->isOpen())

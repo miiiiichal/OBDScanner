@@ -3,13 +3,13 @@
 
 #include <QDialog>
 #include <QtDebug>
-#include <QBluetoothLocalDevice>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothServiceDiscoveryAgent>
-#include <QBluetoothSocket>
-#include "logger.h"
-
+#include "datakeeper.h"
+#include "obddataexchanger.h"
 #include <ui_btconnector.h>
+#include <memory>
+
 
 namespace Ui {
   class BtConnector;
@@ -18,15 +18,40 @@ namespace Ui {
 class BtConnector : public QDialog
 {
   Q_OBJECT
+private:
+  Ui::BtConnector *ui;
+  QBluetoothAddress localDevAddr;
+  //QBluetoothLocalDevice *localDevice;
+  QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
+  QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
+  //QBluetoothSocket *mySocket;
+  QBluetoothDeviceInfo *selectedDevice;
+
+
+
+  QBluetoothDeviceInfo getSelectedRemoteDevice();
+  Logger *log;
+  void debugInfo(QString);
+  ObdDataExchanger *dataEx;
+
+  std::shared_ptr<DataKeeper> spSharedData;
+
 
 public:
-  explicit BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *parent = 0);
+ // explicit BtConnector(QBluetoothLocalDevice &, Logger *, QWidget *parent = 0);
+ // explicit BtConnector(DataKeeper &a,  QWidget *parent = 0);
+  explicit BtConnector(std::shared_ptr<DataKeeper> &a2,  QWidget *parent = 0);
   ~BtConnector();
 
+
 signals:
-  void conectedToSocket(QBluetoothSocket *socket);
+  void conectedToSocket(QBluetoothSocket*);
+  void conectedToSocket(QBluetoothSocket*, QString);
   void notConectedToSocket(QBluetoothDeviceInfo*);
   void testSignal(QString);
+
+public slots:
+  void on_pushButton_2_clicked();
 
 private slots:
   void on_buttonScan_clicked();
@@ -35,6 +60,7 @@ private slots:
   void on_buttonRemoteDeviceInfo_clicked();
   void on_buttonConnect_clicked();
   void on_buttonDisconnect_clicked();
+  void localSignalCatcher(QString);
 
 
   void startScanning();
@@ -52,19 +78,10 @@ private slots:
 
   void on_pushButton_clicked();
 
-private:
-  Ui::BtConnector *ui;
-  QBluetoothAddress localDevAddr;
-  QBluetoothLocalDevice *localDevice;
-  QBluetoothDeviceDiscoveryAgent *localDiscoveryAgent;
-  QBluetoothServiceDiscoveryAgent *serviceDiscoveryAgent;
-  QBluetoothSocket *mySocket;
-  QBluetoothDeviceInfo *selectedDevice;
 
 
-  QBluetoothDeviceInfo getSelectedRemoteDevice();
-  Logger *log;
-  void debugInfo(QString);
+
+
 
 };
 
