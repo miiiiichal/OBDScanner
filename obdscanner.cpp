@@ -93,7 +93,7 @@ void OBDScanner::on_tabWidget_tabBarClicked(int index)
           case ActiveTab::Info :
           {
               mySharedData->log->logDebbug(QString("query from INFO"));
-              ui->info_testEdit->setText(QString(""));
+
               //get car info
 
               break;
@@ -145,7 +145,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
         {
 
             mySharedData->log->logDebbug(QString("response to INFO"));
-            ui->info_testEdit->setText(QString("odpowiedz do zakładki info"));
+
             //get car info : fuel type,battery voltage, obd type, vin , etc.
             break;
         }
@@ -223,6 +223,10 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                }
 
             }
+            //clear DTCs
+            if(resp.size()>2 && !resp[1].compare("44",Qt::CaseInsensitive)){
+                ui->dtc_confirmatioFrame->setEnabled(false);
+            }
             break;
         }
         case ActiveTab::Cmd :
@@ -270,4 +274,25 @@ void OBDScanner::on_dtc_getErrCodesButton_clicked()
     if(mySharedData->dataExchanger!=nullptr)
         mySharedData->dataExchanger->sendDataToElm327("03");
 
+}
+
+void OBDScanner::on_dtc_clearErrors_clicked()
+{
+    ui->dtc_confirmatioFrame->setEnabled(true);
+    ui->dtc_confirmationBox->setEnabled(true);
+}
+
+void OBDScanner::on_dtc_confirmationBox_accepted()
+{
+    mySharedData->log->logDebbug("usuwamy błędy!!!");
+    ui->dtc_confirmationBox->setEnabled(false);
+    if(mySharedData->dataExchanger!=nullptr){
+        //mySharedData->dataExchanger->sendDataToElm327("04");
+
+    }
+}
+
+void OBDScanner::on_dtc_confirmationBox_rejected()
+{
+    ui->dtc_confirmatioFrame->setEnabled(false);
 }

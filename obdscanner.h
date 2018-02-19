@@ -52,6 +52,12 @@ private slots:
 
   void on_dtc_getErrCodesButton_clicked();
 
+  void on_dtc_clearErrors_clicked();
+
+  void on_dtc_confirmationBox_accepted();
+
+  void on_dtc_confirmationBox_rejected();
+
 private:
   Ui::OBDScanner *ui;
   QBluetoothLocalDevice localDevice;
