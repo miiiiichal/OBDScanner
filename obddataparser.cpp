@@ -123,7 +123,7 @@ int ObdDataParser::decodeCoolantTemp(const std::vector<QString> &hex_vals){
     //0105 -> result-40
     int temp=-99;
     if(hex_vals.size()>0){
-        temp = std::stoi(hex_vals[0].toStdString(),nullptr,10);
+        temp = std::stoi(hex_vals[0].toStdString(),nullptr,16);
         if(temp>=0 && temp<=255)
             temp=temp-40;
     }
@@ -134,14 +134,16 @@ int ObdDataParser::decodeIntakeAirTemp(const std::vector<QString> &hex_vals){
     //010f -> result-40
     int temp=-99;
     if(hex_vals.size()>0){
-        temp = std::stoi(hex_vals[0].toStdString(),nullptr,10);
+        temp = std::stoi(hex_vals[0].toStdString(),nullptr,16);
         if(temp>=0 && temp<=255)
             temp=temp-40;
     }
 return temp;
 }
 
-int ObdDataParser::decodeVehicleIdNumber(const std::vector<QString> &hex_vals){}
+int ObdDataParser::decodeVehicleIdNumber(const std::vector<QString> &hex_vals){
+    return 0;
+}
 
 std::pair<int,bool> ObdDataParser::decodeNumberOfDtc(const std::vector<QString> &hex_vals)
 {

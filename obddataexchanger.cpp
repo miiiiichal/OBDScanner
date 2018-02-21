@@ -77,11 +77,11 @@ void ObdDataExchanger::getDataFromElm327(){
            QByteArray line = mySocket->readLine();
            log->logDebbug("Reading FROM SOCKET : " + line);
            lastResponse.append(line);
-           if(line.contains("\r\r")){
+           if(line.contains("\r\r") || line.contains(">")){
                 lockSocket=false;
                 responseRegister.push_back(QString(lastResponse));
                 log->logInfo("Read FROM SOCKET : whole response : " + lastResponse);
-                emit readDataReady(lastResponse);
+                emit readDataReady(getLastResponse());
                 emit sendNextRequest();
                 lastResponse.clear();
 
@@ -100,7 +100,7 @@ QString ObdDataExchanger::getLastResponse()
     if(responseRegister.isEmpty())
         return QString("");
     else
-        return QString(responseRegister.last());
+        return QString(responseRegister.takeLast());
 }
 
 void ObdDataExchanger::setContinueRequesting(bool t_f_val)
@@ -110,12 +110,16 @@ void ObdDataExchanger::setContinueRequesting(bool t_f_val)
 
 void ObdDataExchanger::clearRegisters()
 {
+    log->logDebbug("CLEARING REGISTERS");
     if(!responseRegister.empty())
         responseRegister.clear();
+
+    log->logDebbug(QString("responseREg cleared: "));
     if(!requestRegister.empty()){
         std::queue<QString> emptyQueue;
         std::swap(requestRegister,emptyQueue);
     }
+    log->logDebbug(QString("requestREg cleared: "));
     lockSocket = false;
 
 }

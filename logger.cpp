@@ -4,7 +4,7 @@
 
 Logger::Logger()
 {
-  filePath = "./logs/OBDScannerLog.txt";
+  filePath = "OBDScannerLog.txt";
   logFile = new QFile(filePath);
   logFile->open(QFile::WriteOnly);
 }
@@ -13,7 +13,7 @@ Logger::Logger(QString fileName) : filePath(fileName){
   logFile = new QFile(fileName);
   if(logFile->exists()){
     QDateTime dateTime;
-    QString oldLogName((dateTime.currentDateTime()).toString(QString("yyyyMMddhhmmss")));
+    QString oldLogName((dateTime.currentDateTime()).toString(QString("yyyyMMddhhmm")));
     oldLogName+="_"+logFile->fileName();
     if(logFile->copy(oldLogName)){
         logFile->flush();

@@ -21,7 +21,7 @@ class OBDScanner : public QMainWindow
 
 public:
     enum ActiveTab {
-        Info=0,
+        Info=-1,
         Rtd,
         Dtc,
         Cmd
@@ -46,7 +46,7 @@ private slots:
   void obdResponseDispatcher();
   void getRTD();
 
-  void on_pushButton_clicked();
+  //void on_pushButton_clicked();
 
   void on_dtc_checkErrNumberButton_clicked();
 
@@ -57,6 +57,8 @@ private slots:
   void on_dtc_confirmationBox_accepted();
 
   void on_dtc_confirmationBox_rejected();
+
+  void on_rtd_startButton_clicked();
 
 private:
   Ui::OBDScanner *ui;

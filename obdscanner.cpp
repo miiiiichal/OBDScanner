@@ -17,8 +17,8 @@ OBDScanner::OBDScanner(QWidget *parent) :
       ui->btRadioButton->setChecked(false);
     }
 
-   //log= new Logger("./logs/OBDScannerLog.txt");
-  mySharedData->log= new Logger("./logs/OBDScannerLog2.txt");
+   //log= new Logger("./OBDScannerLog.txt");
+  mySharedData->log= new Logger("OBDScannerLog.txt");
   //log->logInfo("Application statrs");
   mySharedData->log->logInfo("Application statrs");
 
@@ -121,12 +121,16 @@ void OBDScanner::on_tabWidget_tabBarClicked(int index)
 
 void OBDScanner::on_cmd_clearButton_clicked()
 {
+    if(activeTab==-1)
+        activeTab=2;
     ui->cmd_input->setText("");
     mySharedData->log->logDebbug(QString("Clearing cmd input"));
 }
 
 void OBDScanner::on_cmd_sendButton_clicked()
 {
+    if(activeTab==-1)
+        activeTab=2;
     QString cmd = ui->cmd_input->text();
     if(mySharedData->dataExchanger!=nullptr && !cmd.isEmpty()){
         mySharedData->dataExchanger->sendDataToElm327(cmd);
@@ -214,6 +218,11 @@ void OBDScanner::obdResponseDispatcher(const QString response)
             if(resp.size()>2 && !resp[1].compare("43",Qt::CaseInsensitive)){
                vec.insert(vec.begin(),resp.begin()+1, resp.end());
                std::vector<QString> dtcCodes( mySharedData->dataParser.decodeDTC(vec));
+               ui->dtc_descriptionEdit->append(QString("-------- RAPORT --------"));
+               ui->dtc_descriptionEdit->append(QString("-----------------------------"));
+
+               ui->dtc_descriptionEdit->append(QString((QDateTime::currentDateTime()).toString(QString("yyyy-MM-dd hh:mm:ss"))));
+               ui->dtc_descriptionEdit->append(QString("-----------------------------"));
                if(dtcCodes.size()>0){
                    for(auto &code : dtcCodes){
 
@@ -221,6 +230,7 @@ void OBDScanner::obdResponseDispatcher(const QString response)
                        ui->dtc_descriptionEdit->append(QString("-----------------------------"));
                    }
                }
+               ui->dtc_descriptionEdit->append(QString("---------- END ---------"));
 
             }
             //clear DTCs
@@ -246,14 +256,9 @@ void OBDScanner::obdResponseDispatcher()
 void OBDScanner::getRTD()
 {
     //current speed, rpm, coolant temp, intake temp
-    int counter=0;
     mySharedData->log->logDebbug("starting RTD reading");
- //   while(activeTab==ActiveTab::Rtd){
-        //bezpiecznik
-        //if(counter>100)
-            //break;
-       // else
-      //      ++counter;
+    if(mySharedData->dataExchanger==nullptr)
+        return;
     mySharedData->dataExchanger->setContinueRequesting(true);
     mySharedData->dataExchanger->sendDataToElm327(QString("01 0F"));
     mySharedData->dataExchanger->sendDataToElm327("01 0D");
@@ -265,19 +270,28 @@ void OBDScanner::getRTD()
 
 void OBDScanner::on_dtc_checkErrNumberButton_clicked()
 {
+    if(activeTab==-1)
+        activeTab=1;
+    ui->dtc_numberEdit->clear();
+    ui->dtc_milIndicatorON->setChecked(false);
     if(mySharedData->dataExchanger!=nullptr)
         mySharedData->dataExchanger->sendDataToElm327("01 01");
 }
 
 void OBDScanner::on_dtc_getErrCodesButton_clicked()
 {
+    if(activeTab==-1)
+        activeTab=1;
+    ui->dtc_descriptionEdit->setText(QString(""));
     if(mySharedData->dataExchanger!=nullptr)
-        mySharedData->dataExchanger->sendDataToElm327("03");
+        mySharedData->dataExchanger->sendDataToElm327(QString("03"));
 
 }
 
 void OBDScanner::on_dtc_clearErrors_clicked()
 {
+    if(activeTab==-1)
+        activeTab=1;
     ui->dtc_confirmatioFrame->setEnabled(true);
     ui->dtc_confirmationBox->setEnabled(true);
 }
@@ -295,4 +309,11 @@ void OBDScanner::on_dtc_confirmationBox_accepted()
 void OBDScanner::on_dtc_confirmationBox_rejected()
 {
     ui->dtc_confirmatioFrame->setEnabled(false);
+}
+
+void OBDScanner::on_rtd_startButton_clicked()
+{
+    if(activeTab==-1)
+        activeTab=0;
+    getRTD();
 }

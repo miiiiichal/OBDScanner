@@ -5,64 +5,6 @@
 #include <string>
 #include <sstream>
 
-/*
-BtConnector::BtConnector(QBluetoothLocalDevice &localDev, Logger *log, QWidget *parent) :
-  QDialog(parent),
-  log(log),
-  ui(new Ui::BtConnector)
-{
-  // class members
-  ui->setupUi(this);
-
-  localDevice = &localDev;
-  localDevAddr = localDev.address();
-  localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
-  serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);
-
-
-  //interface init vals
-  ui->lineEdit_address->setText(localDevAddr.toString());
-  ui->lineEdit_name->setText(localDev.name());
-  setWindowTitle("Bluetooth device management dialog");
-
-  // my Signal->Slot actions
-  connect(ui->buttonClose, SIGNAL(clicked()),this,SLOT(close()) );
-  connect(localDiscoveryAgent , SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)) , this , SLOT(addFoundDevice(QBluetoothDeviceInfo)));
-  connect(localDiscoveryAgent , SIGNAL(finished()) , this , SLOT(stopScanning()));
-  connect(serviceDiscoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
-  connect(&localDev, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
-  connect(&localDev,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),&localDev,SLOT(pairingConfirmation(bool)) );
-  connect(&localDev,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
-  log->logDebbug("btConnector created");
-}
-
-BtConnector::BtConnector(DataKeeper &a, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::BtConnector)
-{
-    ui->setupUi(this);
-
-    sharedData = a;
-    localDevAddr = sharedData.localDevice->address();
-    localDiscoveryAgent  = new QBluetoothDeviceDiscoveryAgent();
-    serviceDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(localDevAddr);
-
-    //interface init vals
-    ui->lineEdit_address->setText(localDevAddr.toString());
-    ui->lineEdit_name->setText(sharedData.localDevice->name());
-    setWindowTitle("Bluetooth device management dialog");
-
-    // my Signal->Slot actions
-    connect(ui->buttonClose, SIGNAL(clicked()),this,SLOT(close()) );
-    connect(localDiscoveryAgent , SIGNAL(deviceDiscovered(QBluetoothDeviceInfo)) , this , SLOT(addFoundDevice(QBluetoothDeviceInfo)));
-    connect(localDiscoveryAgent , SIGNAL(finished()) , this , SLOT(stopScanning()));
-    connect(serviceDiscoveryAgent, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
-    connect(sharedData.localDevice, SIGNAL(pairingDisplayPinCode(QBluetoothAddress,QString)), this, SLOT(displayPin(QBluetoothAddress,QString)));
-    connect(sharedData.localDevice,SIGNAL(pairingDisplayConfirmation(QBluetoothAddress,QString)),sharedData.localDevice,SLOT(pairingConfirmation(bool)) );
-    connect(sharedData.localDevice,SIGNAL(pairingFinished(QBluetoothAddress,QBluetoothLocalDevice::Pairing)),this,SLOT(finishPairing(QBluetoothAddress,QBluetoothLocalDevice::Pairing)) );
-    sharedData.log->logDebbug("btConnector created");
-}
-*/
 BtConnector::BtConnector(std::shared_ptr<DataKeeper> &a2, QWidget *parent) :
     QDialog(parent),
     spSharedData(a2),
@@ -184,7 +126,7 @@ void BtConnector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo){
 
   spSharedData->log->logDebbug(remoteDeviceInfo);
 
-  ui->textEdit->setText("service discovery: \n"+remoteDeviceInfo);
+  ui->textEdit->setText("service discovery: \n"+serviceInfo.serviceName());
 }
 
 
@@ -354,31 +296,3 @@ void BtConnector::on_buttonDisconnect_clicked()
 }
 
 
-void BtConnector::on_pushButton_clicked()
-{
-    QString instruction(ui->inputInstr->text());
-//    dataEx->sendDataToElm327(instruction);
-//    return;
-    instruction.append("\r");
-    QByteArray buffer(instruction.toStdString().c_str());
-    if(spSharedData->mySocket!=nullptr)
-        spSharedData->mySocket->write(buffer);
-    spSharedData->log->logInfo("write instr: "+instruction);
-    debugInfo("send :" + instruction);
-   // while (spSharedData->mySocket->canReadLine()) {
-   // QByteArray line = this->spSharedData->mySocket->readAll();
-   // spSharedData->log->logDebbug("ReadFROMSOCKET after write: "+QString::fromUtf8(line.constData(), line.length()));
-   // }
-}
-
-void BtConnector::on_pushButton_2_clicked()
-{
-    spSharedData->log->logDebbug("emitting testSignal ");
-    emit testSignal(QString("ssssssssss"));
-    spSharedData->log->logDebbug("emitting connectedToSocket ");
-    emit(conectedToSocket(new QBluetoothSocket()));
-}
-
-void BtConnector::localSignalCatcher(QString s){
-    spSharedData->log->logDebbug("catching test signal in btconnector : "+ s);
-}
