@@ -301,7 +301,7 @@ void OBDScanner::on_dtc_confirmationBox_accepted()
     mySharedData->log->logDebbug("usuwamy błędy!!!");
     ui->dtc_confirmationBox->setEnabled(false);
     if(mySharedData->dataExchanger!=nullptr){
-        //mySharedData->dataExchanger->sendDataToElm327("04");
+        mySharedData->dataExchanger->sendDataToElm327("04");
 
     }
 }
