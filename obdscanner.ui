@@ -70,6 +70,9 @@
     </property>
    </widget>
    <widget class="QTabWidget" name="tabWidget">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -491,6 +494,19 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QPushButton" name="rtd_startButton">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>31</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="dtc_tab">
      <attribute name="title">
@@ -520,7 +536,7 @@
        <widget class="QPushButton" name="dtc_checkErrNumberButton">
         <property name="geometry">
          <rect>
-          <x>380</x>
+          <x>400</x>
           <y>10</y>
           <width>131</width>
           <height>25</height>
@@ -533,7 +549,7 @@
        <widget class="QPushButton" name="dtc_getErrCodesButton">
         <property name="geometry">
          <rect>
-          <x>380</x>
+          <x>400</x>
           <y>50</y>
           <width>131</width>
           <height>25</height>
@@ -543,17 +559,17 @@
          <string>Get error codes</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="dtc_generateReport">
+       <widget class="QPushButton" name="dtc_clearErrors">
         <property name="geometry">
          <rect>
-          <x>380</x>
+          <x>400</x>
           <y>90</y>
           <width>131</width>
           <height>25</height>
          </rect>
         </property>
         <property name="text">
-         <string>Generate report</string>
+         <string>Clear errors</string>
         </property>
        </widget>
        <widget class="QLineEdit" name="dtc_numberEdit">
@@ -617,6 +633,57 @@
         <property name="text">
          <string>&amp;MIL turned on</string>
         </property>
+       </widget>
+       <widget class="QFrame" name="dtc_confirmatioFrame">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>370</x>
+          <y>120</y>
+          <width>191</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QDialogButtonBox" name="dtc_confirmationBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>166</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+         <property name="centerButtons">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_12">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>91</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Are You sure ?</string>
+         </property>
+        </widget>
        </widget>
       </widget>
      </widget>

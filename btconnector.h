@@ -48,10 +48,10 @@ signals:
   void conectedToSocket(QBluetoothSocket*);
   void conectedToSocket(QBluetoothSocket*, QString);
   void notConectedToSocket(QBluetoothDeviceInfo*);
-  void testSignal(QString);
+
 
 public slots:
-  void on_pushButton_2_clicked();
+
 
 private slots:
   void on_buttonScan_clicked();
@@ -60,7 +60,7 @@ private slots:
   void on_buttonRemoteDeviceInfo_clicked();
   void on_buttonConnect_clicked();
   void on_buttonDisconnect_clicked();
-  void localSignalCatcher(QString);
+
 
 
   void startScanning();
@@ -74,14 +74,6 @@ private slots:
   void socketDisconnected();
   void socketRead();
   void socketError(QBluetoothSocket::SocketError);
-
-
-  void on_pushButton_clicked();
-
-
-
-
-
 
 };
 
